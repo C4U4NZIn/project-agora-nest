@@ -7,9 +7,14 @@ import { Prisma } from '@prisma/client'
 import { UserCreateDto } from "src/dto/create-user.dto";
 
 import { PrismaService } from "src/prisma.service";
+
 import { User } from "src/entities/user.entity";
+
 import { throwError } from "rxjs";
+
 import { ExceptionsHandler } from "@nestjs/core/exceptions/exceptions-handler";
+
+import { UpdateUserAll } from "src/dto/update-dto/update-user.dto";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -44,6 +49,7 @@ export class UserService{
 
        if(!user){
        //  console.log("The error is too bad, dude");
+       //console.log(user);
          return user;
        }
        else{
@@ -68,57 +74,116 @@ export class UserService{
    }
 
 
-   async updateAtributesByIdUser(userUpdateDto:UpdateUserDataDto):Promise<User>{
-   
-      try {
-          
-         const data:Prisma.UserUpdateInput = {
+   /**
+    async updateAtributesByIdUser(userUpdateDto:UpdateUserDataDto):Promise<User>{
+    
+       try {
            
-            ...userUpdateDto,
-            password: await  bcrypt.hash(userUpdateDto.password,10),
-
-
-         }
-
-
-
-         let updateEmailThatReturnUserProfile = await this.prisma.user
-         .update(
-         {
+          const data:Prisma.UserUpdateInput = {
+            
+             ...userUpdateDto,
+             password: await  bcrypt.hash(userUpdateDto.password,10),
+    
+    
+          }
+    
+    
+    
+          let updateEmailThatReturnUserProfile = await this.prisma.user
+          .update(
+          {
+          
+             where:{
+                id:userUpdateDto.id
+             },
+             data:{
+             email:data.email
+             },
+             
          
-            where:{
-               id:userUpdateDto.id
+          });
+          
+          if(!updateEmailThatReturnUserProfile)
+             console.log("Something went wrong!");
+              else{
+                return updateEmailThatReturnUserProfile; 
+              }
+       } catch (error) {
+          console.log(error);
+       }
+    
+    }
+    * 
+    * 
+   */
+   //update Name
+    async updateUserById(id:number,data:UpdateUserAll):Promise<User>{
+     try {
+      let updatedUserNameById = this.prisma.user.update(
+         {
+            where: {
+            id:Number(id)
             },
             data:{
-            email:data.email
+           username:data.username,
+           nickname:data.nickname,
+           email:data.email,
+           password: await bcrypt.hash(data.password,10)
             },
-            
-        
-         });
-         
-         if(!updateEmailThatReturnUserProfile)
-            console.log("Something went wrong!");
-             else{
-               return updateEmailThatReturnUserProfile; 
-             }
-      } catch (error) {
-         console.log(error);
+         }
+      );
+
+      if(!updatedUserNameById)
+      console.log(updatedUserNameById)
+     else{
+      return updatedUserNameById;
+     }
+
+
+
+     } catch (error) {
+      console.log(error);
+     }
+    }
+
+  //Update Email 
+
+  async updateUserEmailById(id:number,email:string):Promise<User>{
+
+     try {
+      
+     let updatedUserEmailById = await this.prisma.user.update(
+      
+      {
+         where:{
+         id:Number(id)
+         },
+         data:{
+          email:String(email)
+         }
       }
+     );
+       
+     if(!updatedUserEmailById)
+     console.log(updatedUserEmailById)
+     else{
+      return updatedUserEmailById;
+     }
 
-}
+     } catch (error) {
+      console.log(error);
+     }
 
-
-
-
+  }
 
 
    
-  //delete profile user by email 
-   async deleteUserByEmail(email:string):Promise<User|null>{
+  //delete profile user by id
+   async deleteUserById(id:number):Promise<User|null>{
 
     try {
 
-      let userDeleted = this.prisma.user.delete({where:{email}});
+      let userDeleted = this.prisma.user.delete({where:{id}});
    
       if(!userDeleted){
       console.log("Erro ao deletar perfil");
