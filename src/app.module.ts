@@ -13,6 +13,8 @@ import { JwtAuthGuard } from './Auth/guards/jwt-auth.guard';
 import { MailerModule } from '@nestjs-modules/mailer';
 
 import { EmailController } from './email/mail.controller';
+import { join } from 'path';
+import {HandlebarsAdapter} from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 
 
@@ -24,8 +26,12 @@ import { EmailController } from './email/mail.controller';
           host:'smtp.sendgrid.net',
           auth:{
             user:'apikey',
-            pass:'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'
+            pass:'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'
           }
+        },
+        template:{
+          dir: join(__dirname, 'mails'),
+          adapter: new HandlebarsAdapter()
         }
       }
     ),
