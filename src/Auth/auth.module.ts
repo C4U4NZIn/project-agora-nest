@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestMiddleware, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { JwtModule } from '@nestjs/jwt';
 
@@ -14,7 +14,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 import { LocalStrategy } from './strategies/local.strategy';
 
-//import {loggerValidationMiddleware} from '../Auth/middlewares/login-validation.middleware';
 
 
 @Module({
@@ -33,12 +32,5 @@ import { LocalStrategy } from './strategies/local.strategy';
     //são todos injectables, ou seja vão ser provedores no modulo principal
     providers:[AuthService,LocalStrategy,JwtStrategy],
 })
+//Chamando a implementação do middleware para validar o login
 export class AuthModule{}
-/**
- * 
-configure(consumer: MiddlewareConsumer) {
-    consumer 
-    .apply(loggerValidationMiddleware)
-    .forRoutes({path:'login',method:RequestMethod.POST});
-}
-*/

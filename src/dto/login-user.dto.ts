@@ -1,17 +1,17 @@
-import 
-{
-IsEmail,
-IsString
-} from 'class-validator'
-import { User } from 'src/entities/user.entity';
+import { User } from '../entities/user.entity'
 
+import {
+    IsString,
+    IsEmail,
+} from 'class-validator';
 
 export class UserDataAfterLogin extends User{
-    
-    @IsEmail()
-    email:string;
 
-    @IsString()
-    password:string;
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
+
 
 }
