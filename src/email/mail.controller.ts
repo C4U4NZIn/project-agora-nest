@@ -33,7 +33,11 @@ export class EmailController{
     to:payload.email,
     from:"cauazindofree1234@gmail.com",
     subject:"First Test to improve the code",
-    template:'user'
+    template:'superhero',
+    context:{
+      superHero:payload
+    }
+   
   });
   return "sucess";
  }

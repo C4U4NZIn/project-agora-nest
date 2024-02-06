@@ -15,5 +15,8 @@ export class UpdateUserAll extends User{
     email?: string;
 
     @IsString()
+    phone?: string;
+
+    @IsString()
     password?: string;
 }

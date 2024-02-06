@@ -27,4 +27,7 @@ export class UserCreateDto extends User {
    @IsString()
    nickname?: string;
 
+   @IsString()
+   phone?: string;
+
 }

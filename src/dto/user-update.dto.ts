@@ -11,6 +11,8 @@ export class UserUpdateDto extends User{
 
   nickname?: string;
 
+  phone?: string;
+
   password: string;
 
 
