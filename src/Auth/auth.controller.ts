@@ -8,6 +8,7 @@ import {
     HttpStatus, 
     Post , 
     Request, 
+    Res,
     UseGuards} from '@nestjs/common'
 
 import { IsPublic } from './decorators/is-public.decorator';
@@ -17,6 +18,9 @@ import { AuthRequest } from './models/authRequest';
 import { AuthService } from './auth.service';
 
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { Response } from 'express';
+import { send } from 'process';
+
 
 //apenas passar a requisição do client
 
@@ -47,11 +51,41 @@ export class AuthController{
    @Post('login')
    @HttpCode(HttpStatus.OK)
    @UseGuards(LocalAuthGuard)
-   login(@Request() req:AuthRequest){
+   async login(@Request() req:AuthRequest , @Res() res:Response){
 
     //lá no authService terá a lógica e o tratamento desses dados do user
 
-    return this.authService.login(req.user);
+    
+   
+    try {
+      const authObject = await this.authService.login(req.user);
+      
+      res.cookie('jwtToken',authObject.access_token,{
+        maxAge: 10*30*60*1000,
+        httpOnly:true,
+      });
+
+    const userObject = {
+      id: authObject.id,
+      username:authObject.username,
+      nickname:authObject.nickname,
+      email:authObject.email,
+      phone:authObject.phone
+    }
+   
+
+    return res.status(202).json({
+      status:"Accepted",
+      cookies:res.cookie,
+      user: userObject
+
+    })
+
+    } catch (error) {
+      throw error
+    }
+
+  
 
   }
 

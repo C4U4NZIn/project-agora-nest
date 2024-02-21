@@ -8,6 +8,8 @@ import { UserFromJwt } from '../models/UserFromJwt';
 
 import { UserPayload } from '../models/UserPayload';
 
+import { Request } from 'express';
+
 @Injectable()
  export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
@@ -17,6 +19,10 @@ import { UserPayload } from '../models/UserPayload';
       secretOrKey: process.env.JWT_SECRET,
     });
   }
+
+
+ 
+
 
   async validate(payload: UserPayload): Promise<UserFromJwt> {
     return {
