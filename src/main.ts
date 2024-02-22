@@ -12,7 +12,8 @@ async function bootstrap() {
     forbidNonWhitelisted:true,
   }));
   app.enableCors({
-    credentials:true
+    credentials:true,
+    origin:'http://localhost:3000'
   });
   app.use(cookieParser());
 
