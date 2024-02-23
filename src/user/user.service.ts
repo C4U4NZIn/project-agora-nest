@@ -1,20 +1,11 @@
-import { Injectable } from "@nestjs/common";
-
+import { HttpException, HttpStatus, Injectable , Logger } from "@nestjs/common";
 import * as bcrypt from 'bcrypt'
-
 import { Prisma } from '@prisma/client'
-
 import { UserCreateDto } from "src/dto/create-user.dto";
-
 import { PrismaService } from "src/prisma.service";
-
 import { User } from "src/entities/user.entity";
-
-import { throwError } from "rxjs";
-
-import { ExceptionsHandler } from "@nestjs/core/exceptions/exceptions-handler";
-
 import { UpdateUserAll } from "src/dto/update-dto/update-user.dto";
+import { UserExistsException } from "src/Auth/errors/user-exists.exception";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -23,22 +14,44 @@ import { UpdateUserAll } from "src/dto/update-dto/update-user.dto";
 
 @Injectable()
 export class UserService{
+   private readonly logger = new Logger(UserService.name)
 
    constructor(private readonly prisma:PrismaService){}
 
    //dá de fzer um try catch tlvz
-   async create(userCreateDto:UserCreateDto):Promise<User>{
-   
-   const data:Prisma.UserCreateInput = {
-      ...userCreateDto,
-      password: await bcrypt.hash(userCreateDto.password,10),
-   }
-    const createdUser = await this.prisma.user.create({data});
+   async create(userCreateDto:UserCreateDto):Promise<User|string>{
+ 
 
-      return {
-         ...createdUser,
-         password:undefined,
-      };
+      try {
+           
+      const isThereTheSameExistUser = await this.prisma.user.findUnique({where:{
+         email: userCreateDto.email
+      }})
+
+         
+       if(!isThereTheSameExistUser){
+
+         const data:Prisma.UserCreateInput = {
+            ...userCreateDto,
+            password: await bcrypt.hash(userCreateDto.password,10),
+         }
+          const createdUser = await this.prisma.user.create({data});
+      
+            return {
+               ...createdUser,
+               password:undefined,
+            };
+       }else{
+      
+       throw new UserExistsException();
+
+       }
+
+
+      } catch (error) {
+         this.logger.error(error);
+         throw error;
+      }
 
    }
 
