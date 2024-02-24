@@ -1,6 +1,6 @@
 import { Controller , Get, Post, Delete ,Patch,Body, Req , Res,Param, Put  } from "@nestjs/common";
 
-import { Request } from "express";
+import { Request, Response, response } from "express";
 
 import { UserService } from '../user/user.service'
 
@@ -21,8 +21,20 @@ export class UserController{
     constructor(private readonly userService:UserService){}
 
     @Post('post')
-    create(@Body() userCreateDto:UserCreateDto){
-     return this.userService.create(userCreateDto);
+    async create(@Body() userCreateDto:UserCreateDto , @Res() res:Response){
+
+     const createdUserServiceOrHandleExceptionError = await this.userService.create(userCreateDto);
+    
+     return res.json({
+      message:'Requisition sucesfully',
+      createdUserServiceOrHandleExceptionError: createdUserServiceOrHandleExceptionError        
+     })
+
+
+
+
+
+
     }
     
     @Post('read')
