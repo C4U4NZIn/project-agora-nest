@@ -70,14 +70,18 @@ export class AuthController{
       username:authObject.username,
       nickname:authObject.nickname,
       email:authObject.email,
-      phone:authObject.phone
+      phone:authObject.phone,
+      jwtToken:authObject.access_token
+
     }
    
 
     return res.status(202).json({
       status:"Accepted",
       cookies:res.cookie,
-      user: userObject
+      user: userObject,
+      accessToken: authObject.access_token
+      
 
     })
 

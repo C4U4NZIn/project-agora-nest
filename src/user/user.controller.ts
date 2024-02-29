@@ -30,11 +30,6 @@ export class UserController{
       createdUserServiceOrHandleExceptionError: createdUserServiceOrHandleExceptionError        
      })
 
-
-
-
-
-
     }
     
     @Post('read')
