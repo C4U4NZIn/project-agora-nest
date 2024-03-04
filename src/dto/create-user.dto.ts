@@ -30,4 +30,7 @@ export class UserCreateDto extends User {
    @IsString()
    phone?: string;
 
+   @IsString()
+   role:string;
+
 }

@@ -13,5 +13,8 @@ export class UserDataAfterLogin extends User{
   @IsString()
   password: string;
 
+  @IsString()
+  role:string;
+
 
 }
