@@ -9,6 +9,11 @@ import { EmailController } from './email/mail.controller';
 import { join } from 'path';
 import {HandlebarsAdapter} from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { RolesGuard } from './roles/guards/roles.guard';
+import { ProfessorModule } from './professor/professor.module';
+import { CoordenadorModule } from './coordenador/coordenador.module';
+import { AlunoModule } from './aluno/aluno.module';
+import { AuthAlunoModule } from './AuthAluno/AuthAluno.module';
+import { AuthCoordModule } from './AuthCoordenador/AuthCoordenador.module';
 
 
 
@@ -31,7 +36,7 @@ import { RolesGuard } from './roles/guards/roles.guard';
       }
     ),
     
-    PrismaModule , UserModule , AuthModule],
+    PrismaModule , AuthModule, AuthAlunoModule,AuthCoordModule, CoordenadorModule , AlunoModule],
     controllers:[EmailController],
   providers:[
     {

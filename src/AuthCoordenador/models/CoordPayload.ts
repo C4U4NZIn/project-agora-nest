@@ -1,5 +1,6 @@
 
-export interface UserPayload{
+
+export interface CoordenadorPayload{
     
     sub:string;
     email:string;

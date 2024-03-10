@@ -9,24 +9,19 @@ import {
     Post , 
     Request, 
     Res,
-    UseGuards} from '@nestjs/common'
-
-import { IsPublic } from './decorators/is-public.decorator';
-
-import { AuthRequest } from './models/authRequest';
-
-import { AuthService } from './auth.service';
-
-import { LocalAuthGuard } from './guards/local-auth.guard';
+    UseGuards} from '@nestjs/common';
+import { IsPublic } from '../Auth/decorators/is-public.decorator';
+import { LocalAuthGuard } from 'src/Auth/guards/local-auth.guard';
 import { Response } from 'express';
 import { send } from 'process';
-
-
+import { AuthCoordService } from './AuthCoordenador.service';
+import { LocalCoordAuthGuard } from './guards/LocalCoord.guard';
+import { AuthCoord } from './models/AuthCoordReques';
 //apenas passar a requisição do client
 
 @Controller()
-export class AuthController{
-   constructor(private readonly authService:AuthService){}
+export class AuthCoordController{
+   constructor(private readonly authCoordService:AuthCoordService){}
 
 
    //não será colocada a rota no controlller pois
@@ -48,17 +43,17 @@ export class AuthController{
    
    //req é a requisição do tipo AuthRequest que possui email e senha
    @IsPublic() 
-   @Post('login')
+   @Post('login-coordenador')
    @HttpCode(HttpStatus.OK)
-   @UseGuards(LocalAuthGuard)
-   async login(@Request() req:AuthRequest , @Res() res:Response){
+   @UseGuards(LocalCoordAuthGuard)
+   async login(@Request() req:AuthCoord , @Res() res:Response){
 
     //lá no authService terá a lógica e o tratamento desses dados do user
 
     
    
     try {
-      const authObject = await this.authService.login(req.user);
+      const authObject = await this.authCoordService.login(req.user);
       
       res.cookie('jwtToken',authObject.access_token,{
         maxAge: 10*30*60*1000,

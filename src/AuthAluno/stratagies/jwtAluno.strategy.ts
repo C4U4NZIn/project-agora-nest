@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserFromJwt } from '../models/UserFromJwt';
-import { UserPayload } from '../models/UserPayload';
+import { AlunoPayload } from '../models/AlunoPayload';
 import { Request } from 'express';
+import { AlunoFromJwt } from '../models/AlunoFromJwt';
 
 @Injectable()
- export class JwtStrategy extends PassportStrategy(Strategy , 'local') {
+ export class JwtAlunoStrategy extends PassportStrategy(Strategy , 'local-aluno') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,7 +19,7 @@ import { Request } from 'express';
  
 
 
-  async validate(payload: UserPayload): Promise<UserFromJwt> {
+  async validateAluno(payload: AlunoPayload): Promise<AlunoFromJwt> {
     return {
       id: payload.sub,
       email: payload.email,

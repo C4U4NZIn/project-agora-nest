@@ -9,15 +9,12 @@ import {
     Post , 
     Request, 
     Res,
-    UseGuards} from '@nestjs/common'
-
-import { IsPublic } from './decorators/is-public.decorator';
-
-import { AuthRequest } from './models/authRequest';
-
-import { AuthService } from './auth.service';
-
-import { LocalAuthGuard } from './guards/local-auth.guard';
+    UseGuards} from '@nestjs/common';
+import { IsPublic } from '../Auth/decorators/is-public.decorator';
+import { AuthAluno } from './models/AuthAlunoRequest';
+import { AuthAlunoService } from './AuthAluno.service';
+import { LocalAlunoAuthGuard } from './guards/localAluno-auth.guard';
+import { LocalAuthGuard } from 'src/Auth/guards/local-auth.guard';
 import { Response } from 'express';
 import { send } from 'process';
 
@@ -25,8 +22,8 @@ import { send } from 'process';
 //apenas passar a requisição do client
 
 @Controller()
-export class AuthController{
-   constructor(private readonly authService:AuthService){}
+export class AuthAlunoController{
+   constructor(private readonly authAlunoService:AuthAlunoService){}
 
 
    //não será colocada a rota no controlller pois
@@ -48,17 +45,17 @@ export class AuthController{
    
    //req é a requisição do tipo AuthRequest que possui email e senha
    @IsPublic() 
-   @Post('login')
+   @Post('login-aluno')
    @HttpCode(HttpStatus.OK)
-   @UseGuards(LocalAuthGuard)
-   async login(@Request() req:AuthRequest , @Res() res:Response){
+   @UseGuards(LocalAlunoAuthGuard)
+   async login(@Request() req:AuthAluno , @Res() res:Response){
 
     //lá no authService terá a lógica e o tratamento desses dados do user
 
     
    
     try {
-      const authObject = await this.authService.login(req.user);
+      const authObject = await this.authAlunoService.login(req.user);
       
       res.cookie('jwtToken',authObject.access_token,{
         maxAge: 10*30*60*1000,

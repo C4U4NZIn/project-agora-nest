@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserFromJwt } from '../models/UserFromJwt';
-import { UserPayload } from '../models/UserPayload';
 import { Request } from 'express';
+import { CoordenadorFromJwt } from '../models/CoordFromJwt';
+import { CoordenadorPayload } from '../models/CoordPayload';
 
 @Injectable()
- export class JwtStrategy extends PassportStrategy(Strategy , 'local') {
+ export class JwtCoordStrategy extends PassportStrategy(Strategy , 'local-coordenador') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,7 +19,7 @@ import { Request } from 'express';
  
 
 
-  async validate(payload: UserPayload): Promise<UserFromJwt> {
+  async validateCoordenador(payload:CoordenadorPayload): Promise<CoordenadorFromJwt> {
     return {
       id: payload.sub,
       email: payload.email,

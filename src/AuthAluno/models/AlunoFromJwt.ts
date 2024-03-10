@@ -1,5 +1,4 @@
-
-export interface UserFromJwt{
+export interface AlunoFromJwt{
     id:string;
     email:string;
     username:string;

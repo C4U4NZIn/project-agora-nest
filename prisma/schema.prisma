@@ -20,3 +20,27 @@ model User {
 
   
 }
+
+model Professor {
+ id String @id @default(uuid())
+ username String
+ email String @unique
+ password String @unique
+ role String
+
+}
+model Aluno {
+id String @id @default(uuid())
+username String
+nickname String
+email String @unique
+password String @unique
+role String
+}
+model Coordenador {
+id String @id @default(uuid())
+username String
+email String @unique
+password String @unique
+role String
+}

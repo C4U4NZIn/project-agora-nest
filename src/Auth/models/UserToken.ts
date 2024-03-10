@@ -1,8 +1,8 @@
-import { User } from "src/entities/user.entity";
+import { Professor } from "src/entities/professor.entity";
 
 
 
 
-export interface UserToken extends User{
+export interface UserToken extends Professor {
     access_token:string;  
 }

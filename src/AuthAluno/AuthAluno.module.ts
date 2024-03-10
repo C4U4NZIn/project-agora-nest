@@ -1,18 +1,17 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { UserModule } from '../user/user.module';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
-import { ProfessorModule } from 'src/professor/professor.module';
+import { AuthAlunoController } from './AuthAluno.controller';
+import { AuthAlunoService } from './AuthAluno.service';
+import { JwtAlunoStrategy } from './stratagies/jwtAluno.strategy';
+import { LocalAlunoStrategy } from './stratagies/LocalAluno.strategy';
+import { AlunoModule } from 'src/aluno/aluno.module';
 
 
 
 @Module({
     imports:[
-        ProfessorModule,
+        AlunoModule,
 
         PassportModule,
         
@@ -22,9 +21,9 @@ import { ProfessorModule } from 'src/professor/professor.module';
         }),
     
     ],
-    controllers:[AuthController],
+    controllers:[AuthAlunoController],
     //são todos injectables, ou seja vão ser provedores no modulo principal
-    providers:[AuthService,LocalStrategy,JwtStrategy],
+    providers:[AuthAlunoService,LocalAlunoStrategy,JwtAlunoStrategy],
 })
 //Chamando a implementação do middleware para validar o login
-export class AuthModule{}
+export class AuthAlunoModule{}

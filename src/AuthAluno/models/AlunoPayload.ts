@@ -1,5 +1,4 @@
-
-export interface UserPayload{
+export interface AlunoPayload{
     
     sub:string;
     email:string;
