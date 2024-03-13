@@ -23,8 +23,7 @@ import { CoordenadorPayload } from '../models/CoordPayload';
     return {
       id: payload.sub,
       email: payload.email,
-      username: payload.username,
-      role:payload.role,
+      username: payload.username
     };
   }
 }
