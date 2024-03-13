@@ -6,7 +6,6 @@ import { Strategy } from 'passport-local';
 
 import { AuthService } from '../auth.service';
 
-import { AuthRequest } from '../models/authRequest';
 
 @Injectable()
  export class LocalStrategy extends PassportStrategy(Strategy , 'local') {
@@ -20,9 +19,8 @@ import { AuthRequest } from '../models/authRequest';
   
 
 
-  validate(@Request() req:AuthRequest , email: string, password: string ){
-   const role = req.body.role;
-    return this.authService.validateUser(email, password, role);
+  validate(email: string, password: string ){
+    return this.authService.validateUser(email, password);
   }
 
 }

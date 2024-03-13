@@ -21,7 +21,6 @@ export class AuthCoordService{
       sub:user.id,
       email:user.email,
       username:user.username,
-      role:user.role,
      }
      const jwtToken = this.jwtService.sign(payload);
      //acess_token retornado, sendo o payload dele com o email , 
@@ -46,10 +45,10 @@ export class AuthCoordService{
     //função que valida o user[email,password] a partir do LocalStrategy 
     // que é um Injectable
     //função responsável por validar o usuário
-   async validateCoordenador(email: string, password: string , role:string):Promise<Coordenador> {
+   async validateCoordenador(email: string, password: string):Promise<Coordenador> {
       const user = await  this.coordService.findCoordenadorByEmail(email);
-      const isValidRole = role === user.role;
-     if(user && isValidRole){
+    
+     if(user){
            
           
         const isHashedPasswordValid = await bcrypt.compare(password,user.password);

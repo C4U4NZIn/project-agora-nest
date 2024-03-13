@@ -19,9 +19,9 @@ import { AuthCoord } from '../models/AuthCoordReques';
   
 
 
-  validate(@Request() req:AuthCoord,email:string , password: string) {
-    const role = req.body.role;
-    return this.authCoordService.validateCoordenador(email, password , role);
+  validate(email:string , password: string) {
+
+    return this.authCoordService.validateCoordenador(email, password);
   }
 
 }

@@ -22,9 +22,8 @@ import { AuthAluno } from '../models/AuthAlunoRequest';
   
 
 
-  validate(@Request() req:AuthAluno,email:string , password: string) {
-    const role = req.body.role;
-    return this.authAlunoService.validateAluno(email, password , role);
+  validate(email:string , password: string) {
+    return this.authAlunoService.validateAluno(email, password);
   }
 
 }

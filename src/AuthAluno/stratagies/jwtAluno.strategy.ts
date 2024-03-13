@@ -24,7 +24,6 @@ import { AlunoFromJwt } from '../models/AlunoFromJwt';
       id: payload.sub,
       email: payload.email,
       username: payload.username,
-      role:payload.role,
     };
   }
 }

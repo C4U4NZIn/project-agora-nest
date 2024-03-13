@@ -21,14 +21,6 @@ model User {
   
 }
 
-model Professor {
- id String @id @default(uuid())
- username String
- email String @unique
- password String @unique
- role String
-
-}
 model Aluno {
 id String @id @default(uuid())
 username String
@@ -43,4 +35,24 @@ username String
 email String @unique
 password String @unique
 role String
+professor Professor[]
+}
+model Professor {
+ id String @id @default(uuid())
+ username String
+ email String @unique
+ password String @unique
+ role String
+  coordenadorId String
+  coordenador   Coordenador  @relation(fields: [coordenadorId], references: [id])
+}
+
+model Classroom{
+  id String @id @default(uuid())
+}
+model Questao{
+ id String @id @default(uuid())
+}
+model Simulado{
+  id String @id @default(uuid())
 }

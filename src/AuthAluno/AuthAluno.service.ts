@@ -20,8 +20,7 @@ export class AuthAlunoService{
      const payload:AlunoPayload = {
       sub:user.id,
       email:user.email,
-      username:user.username,
-      role:user.role,
+      username:user.username
      }
      const jwtToken = this.jwtService.sign(payload);
      //acess_token retornado, sendo o payload dele com o email , 
@@ -46,10 +45,9 @@ export class AuthAlunoService{
     //função que valida o user[email,password] a partir do LocalStrategy 
     // que é um Injectable
     //função responsável por validar o usuário
-   async validateAluno(email: string, password: string , role:string):Promise<Aluno> {
+   async validateAluno(email: string, password: string):Promise<Aluno> {
       const user = await  this.alunoService.findByEmail(email);
-      const isValidRole = role === user.role;
-     if(user && isValidRole){
+     if(user){
            
           
         const isHashedPasswordValid = await bcrypt.compare(password,user.password);

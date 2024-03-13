@@ -32,7 +32,6 @@ export class AuthService{
       sub:user.id,
       email:user.email,
       username:user.username,
-      role:user.role,
      }
      const jwtToken = this.jwtService.sign(payload);
      //acess_token retornado, sendo o payload dele com o email , 
@@ -57,16 +56,16 @@ export class AuthService{
     //função que valida o user[email,password] a partir do LocalStrategy 
     // que é um Injectable
     //função responsável por validar o usuário
-   async validateUser(email: string, password: string, role:string):Promise<Professor> {
+   async validateUser(email: string, password: string):Promise<Professor> {
       const user = await  this.profService.findByEmail(email);
     
      if(user){
            
-        const isValidRole = role === user.role;
+      
         const isHashedPasswordValid = await bcrypt.compare(password,user.password);
         
 
-       if(isHashedPasswordValid && isValidRole){
+       if(isHashedPasswordValid){
      
         return {
                 ...user,

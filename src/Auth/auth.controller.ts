@@ -9,14 +9,10 @@ import {
     Post , 
     Request, 
     Res,
-    UseGuards} from '@nestjs/common'
-
+    UseGuards} from '@nestjs/common';
 import { IsPublic } from './decorators/is-public.decorator';
-
 import { AuthRequest } from './models/authRequest';
-
 import { AuthService } from './auth.service';
-
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Response } from 'express';
 import { send } from 'process';
