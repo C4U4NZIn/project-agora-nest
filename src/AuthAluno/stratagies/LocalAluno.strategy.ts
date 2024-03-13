@@ -14,7 +14,6 @@ import { AuthAluno } from '../models/AuthAlunoRequest';
     super(
     {
          usernameField: 'email',
-         passReqToCallback:true 
     } ,
         
     );

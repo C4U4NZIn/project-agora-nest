@@ -57,7 +57,7 @@ export class AuthService{
     // que é um Injectable
     //função responsável por validar o usuário
    async validateUser(email: string, password: string):Promise<Professor> {
-      const user = await  this.profService.findByEmail(email);
+      const user = await this.profService.findByEmail(email);
     
      if(user){
            

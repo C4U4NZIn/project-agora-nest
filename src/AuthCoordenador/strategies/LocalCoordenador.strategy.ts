@@ -10,8 +10,7 @@ import { AuthCoord } from '../models/AuthCoordReques';
   constructor(private authCoordService: AuthCoordService) {
     super(
     {
-         usernameField: 'email',
-         passReqToCallback:true 
+         usernameField: 'email'
     } ,
         
     );

@@ -46,7 +46,7 @@ export class AuthAlunoService{
     // que é um Injectable
     //função responsável por validar o usuário
    async validateAluno(email: string, password: string):Promise<Aluno> {
-      const user = await  this.alunoService.findByEmail(email);
+      const user = await this.alunoService.findByEmail(email);
      if(user){
            
           

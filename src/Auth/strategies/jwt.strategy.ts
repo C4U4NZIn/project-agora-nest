@@ -23,7 +23,7 @@ import { Request } from 'express';
     return {
       id: payload.sub,
       email: payload.email,
-      username: payload.username,
+      username: payload.username
     };
   }
 }

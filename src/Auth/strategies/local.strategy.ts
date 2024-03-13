@@ -12,7 +12,6 @@ import { AuthService } from '../auth.service';
   constructor(private authService: AuthService) {
     super({ 
       usernameField: 'email',
-      passReqToCallback:true 
   
   });
   }
