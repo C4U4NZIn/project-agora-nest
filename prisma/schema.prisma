@@ -53,6 +53,6 @@ model Classroom{
 model Questao{
  id String @id @default(uuid())
 }
-model Simulado{
+model Quiz{
   id String @id @default(uuid())
 }

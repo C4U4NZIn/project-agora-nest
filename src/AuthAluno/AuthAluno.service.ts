@@ -23,9 +23,11 @@ export class AuthAlunoService{
       username:user.username
      }
      const jwtToken = this.jwtService.sign(payload);
+     const payloadUser = this.jwtService.decode(jwtToken);
+     
      //acess_token retornado, sendo o payload dele com o email , 
      //o id e o username dele
- 
+   
      if(!jwtToken){
        throw new ForbiddenException();
      }
@@ -46,7 +48,7 @@ export class AuthAlunoService{
     // que é um Injectable
     //função responsável por validar o usuário
    async validateAluno(email: string, password: string):Promise<Aluno> {
-      const user = await this.alunoService.findByEmail(email);
+      const user = await this.alunoService.findAlunoByEmail(email);
      if(user){
            
           
@@ -68,5 +70,22 @@ export class AuthAlunoService{
     }
 
    }
+   
+   
+   async getUserByJwt(jwtToken:string):Promise<Aluno>{
+   
+     const payload = this.jwtService.decode(jwtToken);
+     const alunoId = payload.sub;
+     const aluno = this.alunoService.findAlunoById(alunoId);
+  
+
+
+     if(aluno){
+      return aluno;
+     }else{
+      throw new Error('Não foi possível encontrar o usuário')
+     }
+
+ } 
 
 }

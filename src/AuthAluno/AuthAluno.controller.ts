@@ -3,6 +3,7 @@
 //entender o porquê por debaixo dos panos e apenas implementar
 //por agr as coisas apenas tem que dar certo
 import { 
+  Body,
     Controller , 
     HttpCode, 
     HttpStatus, 
@@ -17,11 +18,12 @@ import { LocalAlunoAuthGuard } from './guards/localAluno-auth.guard';
 import { LocalAuthGuard } from 'src/Auth/guards/local-auth.guard';
 import { Response } from 'express';
 import { send } from 'process';
+import { AuthJwt } from './models/authJwtDto.dto';
 
 
 //apenas passar a requisição do client
 
-@Controller()
+@Controller('auth-aluno')
 export class AuthAlunoController{
    constructor(private readonly authAlunoService:AuthAlunoService){}
 
@@ -44,24 +46,17 @@ export class AuthAlunoController{
    
    
    //req é a requisição do tipo AuthRequest que possui email e senha
-   @IsPublic() 
-   @Post('login-aluno')
+   @IsPublic()
+   @Post('login')
    @HttpCode(HttpStatus.OK)
    @UseGuards(LocalAlunoAuthGuard)
    async login(@Request() req:AuthAluno , @Res() res:Response){
 
     //lá no authService terá a lógica e o tratamento desses dados do user
-
-    
    
     try {
       const authObject = await this.authAlunoService.login(req.user);
       
-      res.cookie('jwtToken',authObject.access_token,{
-        maxAge: 10*30*60*1000,
-        httpOnly:true,
-      });
-
       const userObject = {
       id: authObject.id,
       username:authObject.username,
@@ -75,7 +70,6 @@ export class AuthAlunoController{
 
     return res.status(202).json({
       status:"Accepted",
-      cookies:res.cookie,
       user: userObject,
       accessToken: authObject.access_token
       
@@ -86,7 +80,28 @@ export class AuthAlunoController{
       throw error
     }
 
-  
+  }
+
+  @IsPublic()
+  @Post('getUser')
+  @HttpCode(HttpStatus.OK)
+  async getUserByJwt(@Request()  req:AuthJwt , @Res() res:Response){
+
+    try{
+    console.log(req.jwtToken);
+    const alunoResponse = await this.authAlunoService.getUserByJwt(req.jwtToken);
+
+    if(alunoResponse){
+      return res.send(202).json({
+        status:'Requisição enviada com sucesso',
+        aluno:alunoResponse
+      })
+    }
+
+
+    }catch(error){
+      throw error
+    }
 
   }
 

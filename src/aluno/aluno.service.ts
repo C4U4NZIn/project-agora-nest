@@ -55,13 +55,11 @@ export class AlunoService{
 
    }
 
-   async findByEmail(email:string):Promise<Aluno>{
-   
-    let  coordenadorByEmail =  await this.prisma.aluno.findUnique({where:{email}});
-    return coordenadorByEmail;  
- 
- }
-
+  async findAlunoById(id:string){
+     return this.prisma.aluno.findUnique({
+      where:{id}
+     })
+  }
    //Show the profile user by email
   
 
