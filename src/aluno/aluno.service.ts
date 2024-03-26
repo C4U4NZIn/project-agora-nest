@@ -19,7 +19,7 @@ export class AlunoService{
 
    constructor(
       private readonly prisma:PrismaService,
-      private readonly jwtService:JwtService
+  
       ){}
 
    //dá de fzer um try catch tlvz
@@ -64,13 +64,7 @@ export class AlunoService{
       where:{id}
      })
   }
-
- 
-
-   //Show the profile user by email
-  
-
-
+  //Show the profile user by email
    async findAlunoByEmail(email:string):Promise<Aluno>{
    
       let  alunoByEmail =  await this.prisma.aluno.findUnique({where:{email}});
@@ -79,17 +73,7 @@ export class AlunoService{
    }
 
 
-   async findAlunoBySub(token:string):Promise<Aluno>{
-  
-      const payload =  this.jwtService.decode(token);
-      const idAluno = payload.sub;
-
-      const alunoResponse = await this.prisma.aluno.findUnique({where:{id:idAluno}})
-      
-      return alunoResponse;
-  
-    }
-  
+   
 
 
 }

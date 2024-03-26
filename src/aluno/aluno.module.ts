@@ -11,7 +11,7 @@ import { JwtService } from "@nestjs/jwt";
 
 @Module({
     imports:[PrismaModule],
-    providers:[AlunoService , JwtService],
+    providers:[AlunoService],
     controllers:[AlunoController],
     exports:[AlunoService],
 })

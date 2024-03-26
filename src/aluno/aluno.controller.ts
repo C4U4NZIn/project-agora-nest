@@ -10,9 +10,7 @@ import { AlunoService } from "./aluno.service";
 @IsPublic()
 @Controller('aluno')
 export class AlunoController{
-    constructor(
-        private readonly alunoService:AlunoService 
-        ){}
+    constructor(private readonly alunoService:AlunoService){}
 
     @Post('post')
     async create(@Body() alunoCreateDto:AlunoCreateDto , @Res() res:Response){
@@ -27,36 +25,5 @@ export class AlunoController{
     }
 
 
-    @IsPublic()
-    @Get('data')
-    async getUser(@Req() req){
-
-     const authAluno = req.headers.authorization;
-
-     const token = authAluno && authAluno.split(' ')[1];
-
-
-    const aluno = await this.alunoService.findAlunoBySub(token);
-
-    console.log(token);
-
-
-    if(token){
-        return {
-           status:202,
-           aluno:aluno
-        }
-   }else{
-     return{
-        status:403
-     }
-   }
-
-    }
-
-
-
-
-
- 
+  
 }

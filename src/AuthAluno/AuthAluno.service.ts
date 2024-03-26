@@ -23,8 +23,7 @@ export class AuthAlunoService{
       username:user.username
      }
      const jwtToken = this.jwtService.sign(payload);
-     const payloadUser = this.jwtService.decode(jwtToken);
-     
+    
      //acess_token retornado, sendo o payload dele com o email , 
      //o id e o username dele
    
@@ -35,8 +34,7 @@ export class AuthAlunoService{
    
 
       return {
-         access_token: jwtToken,
-         ...user
+         access_token: jwtToken
       }
  
         } catch (error) {
@@ -71,21 +69,19 @@ export class AuthAlunoService{
 
    }
    
-   
-   async getUserByJwt(jwtToken:string):Promise<Aluno>{
-   
-     const payload = this.jwtService.decode(jwtToken);
-     const alunoId = payload.sub;
-     const aluno = this.alunoService.findAlunoById(alunoId);
+   async findAlunoBySub(token:string):Promise<Aluno>{
   
+      const payload =  this.jwtService.decode(token);
+      const idAluno = payload.sub;
 
+      const alunoResponse = await this.alunoService.findAlunoById(idAluno);
+      
+      return alunoResponse;
+  
+    }
+  
+   
 
-     if(aluno){
-      return aluno;
-     }else{
-      throw new Error('Não foi possível encontrar o usuário')
-     }
-
- } 
+ 
 
 }

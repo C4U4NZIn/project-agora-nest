@@ -8,9 +8,12 @@ import {
     HttpCode, 
     HttpStatus, 
     Post , 
+    Req, 
     Request, 
     Res,
-    UseGuards} from '@nestjs/common';
+    UseGuards,
+    Get
+  } from '@nestjs/common';
 import { IsPublic } from '../Auth/decorators/is-public.decorator';
 import { AuthAluno } from './models/AuthAlunoRequest';
 import { AuthAlunoService } from './AuthAluno.service';
@@ -72,6 +75,31 @@ export class AuthAlunoController{
 
   }
 
+  @IsPublic()
+  @Get('data-aluno-v1')
+  async getUser(@Req() req){
+    
+    const authAluno = req.headers.authorization;
+
+    const token = authAluno && authAluno.split(' ')[1];
+
+
+   const aluno = await this.authAlunoService.findAlunoBySub(token);
+   
+   if(token){
+       return {
+          status:202,
+          aluno:aluno
+       }
+  }else{
+    return{
+       status:403
+    }
+  }
+
+
+
+  }
 
 
 }

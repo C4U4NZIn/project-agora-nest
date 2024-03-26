@@ -1,0 +1,107 @@
+[33mcommit 6586298e4395d443dc21ef74b64675397694fc42[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Mon Mar 25 21:17:24 2024 -0400
+
+    Erro corrigido , refatorar endpoint getUser pra ir para o endpoint de auth , refatorar tratativas e refatorar método de service
+
+[33mcommit f6120e03d5abd3e726e9324b4f7a8dc8ad0d55ee[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Mon Mar 25 00:12:33 2024 -0400
+
+    implementar fun getUser com jwt
+
+[33mcommit 25d163940b8b85807e82bf38750d3e6481a7bb6d[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Mar 13 14:15:56 2024 -0400
+
+    callStack fixed
+
+[33mcommit b77072134a965ade2654c470f1cfbc1740b16374[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Mar 13 13:59:02 2024 -0400
+
+    jwtCoordenador strategy changeded
+
+[33mcommit a228ca3f76707c3aefd933d33f0f7e9bd17a5af4[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Mar 13 13:56:27 2024 -0400
+
+    login changeded
+
+[33mcommit ab15a7613fc704571b839670737bc5448174f1d0[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Sun Mar 10 09:39:01 2024 -0400
+
+    3 auth , 3 create
+
+[33mcommit 5f8374d2a927326af7cd00c08cf15d05d918f751[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Sun Mar 3 21:30:31 2024 -0400
+
+    Roles was completed
+
+[33mcommit cc9c800cec954c1592969c39f59a1c28def51f5b[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Feb 28 21:09:39 2024 -0400
+
+    fazer todo dia
+
+[33mcommit 3966f8923ff78119821150a93bc19a6e42c702a4[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Fri Feb 23 20:41:00 2024 -0400
+
+    It was a little thing that I got to transform and little actions my future
+
+[33mcommit 76ecc8d619d6987d05392b437f075cbb24a848ff[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Thu Feb 22 21:23:24 2024 -0400
+
+    Implemented erros handlers, next time make a e2e tests
+
+[33mcommit d198db640a86debb721515a6d420d1d8506c918e[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Feb 21 20:01:11 2024 -0400
+
+    A lot of Errors were resolved
+
+[33mcommit c3623d04091acf7a3c617c61fe75bdfe5ba41d9e[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Feb 21 17:49:51 2024 -0400
+
+    Sucessfully Changes
+
+[33mcommit 6add3e2290b38a61c31353496d54ea945740c25c[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Mon Feb 5 23:42:02 2024 -0400
+
+    Connected sucessfuly to browser server
+
+[33mcommit 7f522f0169edeeacae9a48ff0c502af3da0a4c70[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Mon Feb 5 20:05:05 2024 -0400
+
+    Atualizing at 20:05
+
+[33mcommit 3f7b5a57468b0900f38ac4a478793f26aa04091c[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Thu Feb 1 04:50:16 2024 -0400
+
+    Envio de email funcioando!
+
+[33mcommit 0bbf33f9be4a04d557f21aafb71ded04736b4af1[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Wed Jan 31 00:03:01 2024 -0400
+
+    Email is almost finished
+
+[33mcommit 608648a9aa09c6e60addb700affb05c5ff315639[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Mon Jan 29 23:05:27 2024 -0400
+
+    Crud user fished with sucessfuly. However , There´re others features left
+
+[33mcommit c3b873edbc13dbf4a069fc6c533a2c3c78fc3d02[m
+Author: C4U4ZIn <cauazindofree1234@gmail.com>
+Date:   Sun Jan 28 21:32:31 2024 -0400
+
+    Tomorrow is sucks!
