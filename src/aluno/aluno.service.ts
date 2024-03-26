@@ -5,6 +5,7 @@ import { PrismaService } from "src/prisma.service";
 import { UserExistsException } from "src/Auth/errors/user-exists.exception";
 import { AlunoCreateDto } from "./dto/create-aluno.dto";
 import { Aluno } from "src/entities/aluno.entity";
+import { JwtService } from "@nestjs/jwt";
 
 
 
@@ -16,7 +17,10 @@ import { Aluno } from "src/entities/aluno.entity";
 export class AlunoService{
    private readonly logger = new Logger(AlunoService.name)
 
-   constructor(private readonly prisma:PrismaService){}
+   constructor(
+      private readonly prisma:PrismaService,
+      private readonly jwtService:JwtService
+      ){}
 
    //dá de fzer um try catch tlvz
    async create(alunoCreateDto:AlunoCreateDto):Promise<Aluno|string>{
@@ -60,6 +64,9 @@ export class AlunoService{
       where:{id}
      })
   }
+
+ 
+
    //Show the profile user by email
   
 
@@ -70,6 +77,18 @@ export class AlunoService{
       return alunoByEmail;  
    
    }
+
+
+   async findAlunoBySub(token:string):Promise<Aluno>{
+  
+      const payload =  this.jwtService.decode(token);
+      const idAluno = payload.sub;
+
+      const alunoResponse = await this.prisma.aluno.findUnique({where:{id:idAluno}})
+      
+      return alunoResponse;
+  
+    }
   
 
 

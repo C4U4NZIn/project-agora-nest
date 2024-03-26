@@ -57,24 +57,14 @@ export class AuthAlunoController{
     try {
       const authObject = await this.authAlunoService.login(req.user);
       
-      const userObject = {
-      id: authObject.id,
-      username:authObject.username,
-     
-      email:authObject.email,
-      
-      jwtToken:authObject.access_token
+     if(authObject){
+       return res.json({
+         status:202,
+         accessToken: authObject.access_token
+       })
 
-    }
-   
+     }
 
-    return res.status(202).json({
-      status:"Accepted",
-      user: userObject,
-      accessToken: authObject.access_token
-      
-
-    })
 
     } catch (error) {
       throw error
@@ -82,27 +72,6 @@ export class AuthAlunoController{
 
   }
 
-  @IsPublic()
-  @Post('getUser')
-  @HttpCode(HttpStatus.OK)
-  async getUserByJwt(@Request()  req:AuthJwt , @Res() res:Response){
 
-    try{
-    console.log(req.jwtToken);
-    const alunoResponse = await this.authAlunoService.getUserByJwt(req.jwtToken);
-
-    if(alunoResponse){
-      return res.send(202).json({
-        status:'Requisição enviada com sucesso',
-        aluno:alunoResponse
-      })
-    }
-
-
-    }catch(error){
-      throw error
-    }
-
-  }
 
 }
