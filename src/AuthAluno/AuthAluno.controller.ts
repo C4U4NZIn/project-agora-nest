@@ -79,23 +79,32 @@ export class AuthAlunoController{
   @Get('data-aluno-v1')
   async getUser(@Req() req){
     
-    const authAluno = req.headers.authorization;
+    try {
+      const authAluno = req.headers.authorization;
+  
+      const token = authAluno && authAluno.split(' ')[1];
 
-    const token = authAluno && authAluno.split(' ')[1];
-
-
-   const aluno = await this.authAlunoService.findAlunoBySub(token);
-   
-   if(token){
-       return {
-          status:202,
-          aluno:aluno
-       }
-  }else{
-    return{
-       status:403
+      if(token){
+        const aluno = await this.authAlunoService.findAlunoBySub(token);
+         return {
+            status:202,
+            aluno:aluno
+         }
+    }else{
+      return{
+         status:403,
+         message:'Token Inválido ! Tente novamente mais tarde'
+      }
     }
-  }
+    
+   } catch (error) {
+    throw new Error
+   }
+
+
+
+
+
 
 
 
