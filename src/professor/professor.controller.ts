@@ -15,11 +15,12 @@ export class ProfessorController{
     @Post('post')
     async create(@Body() profCreateDto:ProfessorCreateDto , @Res() res:Response){
 
-     const createdProfessorService = await this.professorService.create(profCreateDto);
+     const responseService = await this.professorService.create(profCreateDto);
     
      return res.json({
       message:'Requisition sucesfully',
-      createdUserServiceOrHandleExceptionError: createdProfessorService      
+      professor:responseService.professor,
+      user:responseService.user     
      })
 
     }

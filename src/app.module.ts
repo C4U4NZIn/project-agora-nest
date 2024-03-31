@@ -12,8 +12,7 @@ import { RolesGuard } from './roles/guards/roles.guard';
 import { ProfessorModule } from './professor/professor.module';
 import { CoordenadorModule } from './coordenador/coordenador.module';
 import { AlunoModule } from './aluno/aluno.module';
-import { AuthAlunoModule } from './AuthAluno/AuthAluno.module';
-import { AuthCoordModule } from './AuthCoordenador/AuthCoordenador.module';
+
 
 
 
@@ -36,7 +35,7 @@ import { AuthCoordModule } from './AuthCoordenador/AuthCoordenador.module';
       }
     ),
     
-    PrismaModule , AuthModule, AuthAlunoModule,AuthCoordModule, CoordenadorModule , AlunoModule],
+    PrismaModule , AuthModule,  CoordenadorModule , AlunoModule],
     controllers:[EmailController],
   providers:[
     {

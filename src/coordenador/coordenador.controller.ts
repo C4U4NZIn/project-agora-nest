@@ -15,11 +15,12 @@ export class CoordenadorController{
     @Post('post')
     async create(@Body() coordenadorCreateDto:CoordenadorCreateDto , @Res() res:Response){
 
-     const createdCoordenador = await this.coordenadorService.create(coordenadorCreateDto);
+     const response = await this.coordenadorService.create(coordenadorCreateDto);
     
      return res.json({
       message:'Requisition sucesfully',
-      createdCoordenador: createdCoordenador      
+      createdCoordenador: response.coordenador,
+      createdUser:response.user,     
      })
 
     }

@@ -6,8 +6,8 @@ import { UserExistsException } from "src/Auth/errors/user-exists.exception";
 import { AlunoCreateDto } from "./dto/create-aluno.dto";
 import { Aluno } from "src/entities/aluno.entity";
 import { JwtService } from "@nestjs/jwt";
-
-
+import { AlunoAndUser } from "./types/aluno.interface";
+import { User } from "src/entities/user.entity";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 
@@ -15,65 +15,80 @@ import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class AlunoService{
-   private readonly logger = new Logger(AlunoService.name)
-
-   constructor(
-      private readonly prisma:PrismaService,
   
-      ){}
+   private readonly logger = new Logger(AlunoService.name)
+   constructor(private readonly prisma:PrismaService){}
 
-   //dá de fzer um try catch tlvz
-   async create(alunoCreateDto:AlunoCreateDto):Promise<Aluno|string>{
+   async create(alunoCreateDto:AlunoCreateDto):Promise<AlunoAndUser>{
  
-
       try {
-           
-      const isThereTheSameExistAluno = await this.prisma.aluno.findUnique({where:{
-         email: alunoCreateDto.email
-      }})
-
          
-       if(!isThereTheSameExistAluno){
+      const verifiedAluno = await this.exists(alunoCreateDto.email);
 
-         const data:Prisma.AlunoCreateInput = {
-            ...alunoCreateDto,
-            password: await bcrypt.hash(alunoCreateDto.password,10),
-         }
-          const createdAluno = await this.prisma.aluno.create({data});
+      if(verifiedAluno){
+         throw new UserExistsException();
+      }
+
+      const createdAluno = await this.createAluno(alunoCreateDto);
+      const createdUser = await this.createUser(createdAluno);
+
+      return {
+         aluno:createdAluno,
+         user:createdUser,
+      }
       
-            return {
-               ...createdAluno,
-               password:undefined,
-            };
-       }else{
-      
-       throw new UserExistsException();
-
-       }
-
-
-      } catch (error) {
+     } catch (error) {
          this.logger.error(error);
          throw error;
       }
 
+   } 
+   async createAluno(alunoCreateDto:AlunoCreateDto):Promise<Aluno|null>{
+      
+      const data:Prisma.AlunoCreateInput = {
+         ...alunoCreateDto,
+         password: await bcrypt.hash(alunoCreateDto.password,10),
+      }
+      
+      const createdAluno = await this.prisma.aluno.create({data});
+      return createdAluno;
+      
    }
-
+   
+   async createUser(createdAluno:Aluno):Promise<User>{
+      
+      const data:Prisma.UserCreateInput = {
+         id:createdAluno.id,
+         email:createdAluno.email,
+         password:createdAluno.password,
+         role:createdAluno.role,
+         
+      }
+      
+      const createdUser = await this.prisma.user.create({data});
+      return createdUser;
+      
+   }
+   async exists(email:string):Promise<boolean>{
+      const isThereTheSameAluno = await this.prisma.aluno.findUnique({where:{email}});
+      
+      if(isThereTheSameAluno){
+         return true
+      }else{
+         return false
+      }
+      
+   } 
   async findAlunoById(id:string){
      return this.prisma.aluno.findUnique({
       where:{id}
      })
   }
-  //Show the profile user by email
    async findAlunoByEmail(email:string):Promise<Aluno>{
    
       let  alunoByEmail =  await this.prisma.aluno.findUnique({where:{email}});
       return alunoByEmail;  
    
    }
-
-
-   
-
 
 }

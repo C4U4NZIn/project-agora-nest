@@ -5,11 +5,16 @@ import {
   IsString,
   Matches,
   MinLength,
-  MaxLength
+  MaxLength,
+  IsUUID
 
 }  from 'class-validator'
 
 export class UserCreateDto extends User {
+
+
+   @IsUUID()
+   id?: string;
 
    @IsEmail()
    email: string;
@@ -20,15 +25,6 @@ export class UserCreateDto extends User {
    @MinLength(8)    
    @MaxLength(15)
    password: string;
-
-   @IsString()
-   username:string;
-
-   @IsString()
-   nickname?: string;
-
-   @IsString()
-   phone?: string;
 
    @IsString()
    role:string;

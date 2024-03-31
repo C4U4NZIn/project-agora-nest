@@ -7,6 +7,10 @@ import { UserPayload } from "./models/UserPayload";
 import { UserToken } from "./models/UserToken";
 import { Professor } from "src/entities/professor.entity";
 import { ProfessorService } from "src/professor/professor.service";
+import { Coordenador } from "src/entities/coordenador.entity";
+import { Aluno } from "src/entities/aluno.entity";
+import { CoordenadorService } from "src/coordenador/coordenador.service";
+import { AlunoService } from "src/aluno/aluno.service";
 
 
 
@@ -16,22 +20,24 @@ export class AuthService{
     //instanciar o objeto jwtService 
     //o JwtService é fornecido pelo module '@nestjs/jwt'
     constructor(
-   private readonly jwtService:JwtService,     
-  
-   private readonly profService:ProfessorService
+   private readonly jwtService:JwtService,   
+   private readonly coordenadorService:CoordenadorService,
+   private readonly profService:ProfessorService,
+   private readonly alunoService:AlunoService,  
+   private readonly userService:UserService
 
    ){}
 
     //instanciarei o payload que será usado como parametro pro jwt
     //pra poder gerar o acess_token
     //Essa função Login devolverá um token de user
-    async login(user:Professor):Promise<UserToken>{
+    async login(user:User):Promise<UserToken>{
         try {
           
      const payload:UserPayload = {
       sub:user.id,
       email:user.email,
-      username:user.username,
+      role:user.role,
      }
      const jwtToken = this.jwtService.sign(payload);
      //acess_token retornado, sendo o payload dele com o email , 
@@ -56,8 +62,8 @@ export class AuthService{
     //função que valida o user[email,password] a partir do LocalStrategy 
     // que é um Injectable
     //função responsável por validar o usuário
-   async validateUser(email: string, password: string):Promise<Professor> {
-      const user = await this.profService.findByEmail(email);
+   async validateUser(email: string, password: string):Promise<User> {
+      const user = await this.userService.findUserByEmail(email);
     
      if(user){
            
@@ -81,4 +87,34 @@ export class AuthService{
     }
 
    }
+
+  async findUserBySub(token:string):Promise<any>{
+
+   const payload = this.jwtService.decode(token);
+   const userId = payload.sub;
+   const role = payload.role;
+   let user
+
+
+   switch(role){
+
+    case 'Coordenador':
+      user = await this.coordenadorService.findCoordenadorById(userId);
+      break;
+     
+     case 'professor':
+       user = await this.profService.findProfById(userId);
+       break;
+     case 'aluno':
+     user = await this.alunoService.findAlunoById(userId);
+     break;
+    
+    }
+  
+   return user;
+
+  }
+
+
+
 }

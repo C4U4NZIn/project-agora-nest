@@ -10,15 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 model User {
-  id Int @id @default(autoincrement())
-  username String? 
-  nickname String?
+  id String @id 
   email String @unique
-  phone String?
   password String @unique
   role String
 
-  
 }
 
 model Aluno {
@@ -28,6 +24,9 @@ nickname String
 email String @unique
 password String @unique
 role String
+
+
+
 }
 model Coordenador {
 id String @id @default(uuid())
@@ -35,7 +34,8 @@ username String
 email String @unique
 password String @unique
 role String
-professor Professor[]
+
+
 }
 model Professor {
  id String @id @default(uuid())
@@ -43,8 +43,7 @@ model Professor {
  email String @unique
  password String @unique
  role String
-  coordenadorId String
-  coordenador   Coordenador  @relation(fields: [coordenadorId], references: [id])
+
 }
 
 model Classroom{

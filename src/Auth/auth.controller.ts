@@ -9,7 +9,10 @@ import {
     Post , 
     Request, 
     Res,
-    UseGuards} from '@nestjs/common';
+    UseGuards,
+    Get,
+    Req
+  } from '@nestjs/common';
 import { IsPublic } from './decorators/is-public.decorator';
 import { AuthRequest } from './models/authRequest';
 import { AuthService } from './auth.service';
@@ -20,7 +23,7 @@ import { send } from 'process';
 
 //apenas passar a requisição do client
 
-@Controller()
+@Controller('auth')
 export class AuthController{
    constructor(private readonly authService:AuthService){}
 
@@ -51,42 +54,48 @@ export class AuthController{
 
     //lá no authService terá a lógica e o tratamento desses dados do user
 
-    
-   
     try {
+      
       const authObject = await this.authService.login(req.user);
-      
-      res.cookie('jwtToken',authObject.access_token,{
-        maxAge: 10*30*60*1000,
-        httpOnly:true,
-      });
-
-      const userObject = {
-      id: authObject.id,
-      username:authObject.username,
-     
-      email:authObject.email,
-      
-      jwtToken:authObject.access_token
-
-    }
-   
-
-    return res.status(202).json({
-      status:"Accepted",
-      cookies:res.cookie,
-      user: userObject,
+      return res.status(202).json({
+      status:202,
       accessToken: authObject.access_token
-      
-
-    })
+     })
 
     } catch (error) {
       throw error
     }
 
-  
 
   }
+
+  @IsPublic()
+  @Get('data')
+  async getUser(@Req() req){
+
+    try {
+      const authUser = req.headers.authorization;
+  
+      const token = authUser && authUser.split(' ')[1];
+
+      if(token){
+        const user = await this.authService.findUserBySub(token);
+         return {
+            status:202,
+            aluno:user
+         }
+       }else{
+      return{
+         status:403,
+         message:'Token Inválido ! Tente novamente mais tarde'
+      }
+    }
+    
+   } catch (error) {
+    throw new Error
+   }
+
+  }
+
 
 }

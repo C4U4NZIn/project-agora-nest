@@ -26,28 +26,6 @@ export class UserController{
      })
 
     }
-    @Roles(Role.Student)
-    @Post('read')
-    findUserByEmailToShowAfterLogin(@Body() userDataAfterLogin:UserDataAfterLogin){
-        return this.userService.findByEmail(userDataAfterLogin.email);
-    }
 
-    @Put(':id')
-    updateUserById(@Param('id') id:number, @Body() updateUser:UpdateUserAll){
-        return this.userService.updateUserById(id,updateUser);
-    }
-
-    @Put(':id')
-    updateUserEmailById(@Param('id') id:number, @Body() updateUserEmail:UpdateUserEmail){
-        return this.userService.updateUserEmailById(id,updateUserEmail.email);
-    }
-
-
-    @Delete(':id')
-     deleteUserById(@Param('id') id:number){
-   
-       return this.userService.deleteUserById(id);
-   
-    }
 
 }

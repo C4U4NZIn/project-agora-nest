@@ -5,7 +5,8 @@ import { PrismaService } from "src/prisma.service";
 import { UserExistsException } from "src/Auth/errors/user-exists.exception";
 import { ProfessorCreateDto } from "./dto/create-professor.dto";
 import { Professor } from "src/entities/professor.entity";
-
+import { User } from "src/entities/user.entity";
+import { ProfessorAndUser } from "./types/professor.interface";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 
@@ -13,33 +14,26 @@ import { Professor } from "src/entities/professor.entity";
 
 @Injectable()
 export class ProfessorService{
+   
    private readonly logger = new Logger(ProfessorService.name)
-
    constructor(private readonly prisma:PrismaService){}
 
-   //dá de fzer um try catch tlvz
-   async create(profCreateDto:ProfessorCreateDto):Promise<Professor|string>{
+   async create(profCreateDto:ProfessorCreateDto):Promise<ProfessorAndUser>{
  
-
-      try {
+        try {
            
-      const isThereTheSameExistProfessor = await this.prisma.professor.findUnique({where:{
-         email: profCreateDto.email
-      }})
-
+       const verifiedProf = await this.exists(profCreateDto.email);
          
-       if(!isThereTheSameExistProfessor){
+       if(!verifiedProf){
 
-         const data:Prisma.ProfessorCreateInput = {
-            ...profCreateDto,
-            password: await bcrypt.hash(profCreateDto.password,10),
-         }
-          const createdProfessor = await this.prisma.professor.create({data});
-      
-            return {
-               ...createdProfessor,
-               password:undefined,
-            };
+       const createdProfessor = await this.createProf(profCreateDto);
+       const createdUser = await this.createUser(createdProfessor);     
+ 
+           return {
+              professor:createdProfessor,
+              user:createdUser
+            }
+
        }else{
       
        throw new UserExistsException();
@@ -54,6 +48,45 @@ export class ProfessorService{
 
    }
 
+
+   async exists(email:string):Promise<boolean>{
+      const isThereTheSameProf = await this.prisma.professor.findUnique({where:{email}});
+      
+      if(isThereTheSameProf){
+         return true
+      }else{
+         return false
+      }
+      
+   }
+   
+   async createProf(profCreateDto:ProfessorCreateDto):Promise<Professor|null>{
+      
+      const data:Prisma.ProfessorCreateInput = {
+         ...profCreateDto,
+         password: await bcrypt.hash(profCreateDto.password,10),
+      }
+      
+      const createdProf = await this.prisma.professor.create({data});
+      return createdProf;
+      
+   }
+
+   async createUser(createdProf:Professor):Promise<User>{
+      
+      const data:Prisma.UserCreateInput = {
+         id:createdProf.id,
+         email:createdProf.email,
+         password:createdProf.password,
+         role:createdProf.role,
+         
+      }
+      const createdUser = await this.prisma.user.create({data});
+      
+      return createdUser;
+      
+   }
+
    async findByEmail(email:string):Promise<Professor>{
    
     let  profByEmail =  await this.prisma.professor.findUnique({where:{email}});
@@ -61,10 +94,12 @@ export class ProfessorService{
  
  }
 
-   //Show the profile user by email
-  
+  async findProfById(id:string):Promise<Professor|null>{
 
+   const professor = await this.prisma.professor.findUnique({where:{id}});
+   return professor;
 
+  }
 
 
 }

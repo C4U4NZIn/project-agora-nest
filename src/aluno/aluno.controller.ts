@@ -15,11 +15,13 @@ export class AlunoController{
     @Post('post')
     async create(@Body() alunoCreateDto:AlunoCreateDto , @Res() res:Response){
 
-     const createdAluno = await this.alunoService.create(alunoCreateDto);
+     const responseService = await this.alunoService.create(alunoCreateDto);
     
      return res.json({
       message:'Requisition sucesfully',
-      createdAluno: createdAluno     
+      Aluno: responseService.aluno,
+      user:responseService.user
+      
      })
 
     }

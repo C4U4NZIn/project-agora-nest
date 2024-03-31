@@ -7,12 +7,18 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { ProfessorModule } from 'src/professor/professor.module';
+import { AlunoModule } from 'src/aluno/aluno.module';
+import { Coordenador } from 'src/entities/coordenador.entity';
+import { CoordenadorModule } from 'src/coordenador/coordenador.module';
 
 
 
 @Module({
     imports:[
+        UserModule,
+        AlunoModule,
         ProfessorModule,
+        CoordenadorModule,
 
         PassportModule,
         
