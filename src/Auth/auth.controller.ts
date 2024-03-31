@@ -82,7 +82,7 @@ export class AuthController{
         const user = await this.authService.findUserBySub(token);
          return {
             status:202,
-            aluno:user
+            user:user
          }
        }else{
       return{
