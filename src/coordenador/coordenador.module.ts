@@ -9,7 +9,7 @@ import { UserModule } from "src/user/user.module";
 
 
 @Module({
-    imports:[PrismaModule],
+    imports:[PrismaModule, UserModule],
     providers:[CoordenadorService],
     controllers:[CoordenadorController],
     exports:[CoordenadorService],

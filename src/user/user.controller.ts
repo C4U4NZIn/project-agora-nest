@@ -8,6 +8,7 @@ import { UpdateUserAll } from "src/dto/update-dto/update-user.dto";
 import { UpdateUserEmail } from "src/dto/update-dto/update-user-email.dto";
 import { Roles } from "src/roles/decorators/roles.decorator";
 import { Role } from "src/roles/enums/role.enum";
+import { otpDto } from "./dto/otp-dto.dto";
 
 
 @IsPublic()
@@ -27,5 +28,28 @@ export class UserController{
 
     }
 
+    @Post('verify')
+    async verifyCode(@Body() otpUser:otpDto , @Res() res:Response){
+
+     const isValidCode = await this.userService.verifyCodeOtp(otpUser.currentCode , otpUser.id);
+
+
+     if(!isValidCode){
+
+         res.json({
+            status:409,
+            message:'Ops! Ocorreu um erro no servidor! Tente novamente mais tarde!',
+            isValidCode:isValidCode 
+        })             
+     }
+     res.json({
+        status:202,
+        message:'Requisição bem sucedida!',
+        isValid:isValidCode
+     })    
+
+    
+
+    }
 
 }

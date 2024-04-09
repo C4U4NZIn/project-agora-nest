@@ -25,7 +25,7 @@ import { AlunoModule } from './aluno/aluno.module';
           host:'smtp.sendgrid.net',
           auth:{
             user:'apikey',
-            pass:'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'
+            pass:'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'
           }
         },
         template:{
@@ -35,7 +35,7 @@ import { AlunoModule } from './aluno/aluno.module';
       }
     ),
     
-    PrismaModule , AuthModule,  CoordenadorModule , AlunoModule],
+    PrismaModule , AuthModule,  CoordenadorModule , AlunoModule , UserModule],
     controllers:[EmailController],
   providers:[
     {

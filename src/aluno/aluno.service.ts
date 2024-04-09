@@ -8,6 +8,7 @@ import { Aluno } from "src/entities/aluno.entity";
 import { JwtService } from "@nestjs/jwt";
 import { AlunoAndUser } from "./types/aluno.interface";
 import { User } from "src/entities/user.entity";
+import { UserService } from "src/user/user.service";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 
@@ -17,7 +18,10 @@ import { User } from "src/entities/user.entity";
 export class AlunoService{
   
    private readonly logger = new Logger(AlunoService.name)
-   constructor(private readonly prisma:PrismaService){}
+   constructor(
+      private readonly prisma:PrismaService,
+      private readonly user:UserService 
+   ){}
 
    async create(alunoCreateDto:AlunoCreateDto):Promise<AlunoAndUser>{
  
@@ -55,7 +59,7 @@ export class AlunoService{
       
    }
    
-   async createUser(createdAluno:Aluno):Promise<User>{
+   async createUser(createdAluno:Aluno):Promise<User|any>{
       
       const data:Prisma.UserCreateInput = {
          id:createdAluno.id,
@@ -66,7 +70,14 @@ export class AlunoService{
       }
       
       const createdUser = await this.prisma.user.create({data});
-      return createdUser;
+      
+      const createdOtpUser = await this.user.createUserOtp(createdUser.id,createdUser.email);
+      
+      
+      return {
+         user: createdUser,
+         otpUser:createdOtpUser,
+      };
       
    }
    async exists(email:string):Promise<boolean>{
