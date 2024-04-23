@@ -1,6 +1,11 @@
+
+
 export class User{
     id?: string;
-    email?:string;
-    password?:string;
+    username:string;
+    avatar?:Buffer;
+    email:string;
+    emailInstitutional:string;
+    password:string;
     role:string; 
 }

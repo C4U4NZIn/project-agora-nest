@@ -9,6 +9,7 @@ import { JwtService } from "@nestjs/jwt";
 import { AlunoAndUser } from "./types/aluno.interface";
 import { User } from "src/entities/user.entity";
 import { UserService } from "src/user/user.service";
+import { filiacaoDto } from "src/dto/filiacao-dto.dto";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 
@@ -50,15 +51,41 @@ export class AlunoService{
    async createAluno(alunoCreateDto:AlunoCreateDto):Promise<Aluno|null>{
       
       const data:Prisma.AlunoCreateInput = {
-         ...alunoCreateDto,
+         username:alunoCreateDto.username,
+         email:alunoCreateDto.email,
+         role:alunoCreateDto.role,
+         emailInstitutional:alunoCreateDto.emailInstitutional,
+         matricula:alunoCreateDto.matricula,
+         turma:alunoCreateDto.turma,
          password: await bcrypt.hash(alunoCreateDto.password,10),
       }
-      
       const createdAluno = await this.prisma.aluno.create({data});
+
+      const createdFiliacao = await this.createFiliacao(alunoCreateDto.filiacao);
+
       return createdAluno;
       
    }
    
+   async createFiliacao(filiacao:filiacaoDto):Promise<any>{
+
+      const dataFiliacao:Prisma.filiacaoCreateInput = {
+         id:filiacao.id,
+         telefone1:filiacao.telefone1,
+         username:filiacao.username,
+         telefone2:filiacao.telefone2,
+         tipo_Relacionamento:filiacao.tipo_Relacionamento,
+
+      }
+      const createANewFiliacao = await this.prisma.filiacao.create({data:dataFiliacao})
+      
+      return createANewFiliacao;
+
+
+   }
+
+
+
    async createUser(createdAluno:Aluno):Promise<User|any>{
       
       const data:Prisma.UserCreateInput = {

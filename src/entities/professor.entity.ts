@@ -1,6 +1,9 @@
 import { User } from "./userTest.entity";
 
 export class Professor extends User{
-    username: string;
-
+   cpf?:string;
+   titulacao:string;
+   telefone1:string;
+   telefone2:string;
+   
 }

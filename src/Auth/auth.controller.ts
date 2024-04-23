@@ -80,10 +80,19 @@ export class AuthController{
 
       if(token){
         const user = await this.authService.findUserBySub(token);
-         return {
-            status:202,
-            user:user
-         }
+        if(user){
+          return {
+             status:202,
+             user:user
+          }
+          
+        }else{
+          return {
+            status:401,
+            message:'Usuário inexistente!'
+
+          }
+        }
        }else{
       return{
          status:403,

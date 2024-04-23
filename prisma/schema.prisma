@@ -9,55 +9,159 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model address{
+  id String @id @default(uuid())
+  cep String
+  numberHouse Int?
+  bairro String
+  estado String
+  cidade String
+  country String
+  logradouro String?
+  complemento String?
+
+  idAluno String
+  aluno Aluno @relation(fields: [idAluno] , references: [id])
+  idCoordenador String
+  coordenador Coordenador @relation(fields: [idCoordenador] , references: [id])
+  idProfessor String
+  professor Professor @relation(fields: [idProfessor] , references: [id])
+
+}
+
+
+
 model User {
   id String @id 
   email String @unique
   password String @unique
   role String
+  
+}
+
+model filiacao {
+  id String @id @default(uuid())
+  username String 
+  tipo_Relacionamento String
+  telefone1 String?
+  telefone2 String?
 
 }
 
+
 model Aluno {
 id String @id @default(uuid())
+avatar Bytes? 
 username String
-nickname String
 email String @unique
+emailInstitutional String @unique
 password String @unique
 role String
-
+matricula String @unique
+turma String @unique
+quiz Quiz[]
+salas Salas_Alunos[]
+address address[]
 
 
 }
 model Coordenador {
 id String @id @default(uuid())
 username String
-email String @unique
+avatar Bytes? 
 password String @unique
 role String
+phonePersonal String 
+phoneInstitutional String
+email String @unique
+emailInstitutional String @unique
 
+turmas Turmas[]
+address address[]
 
 }
 model Professor {
  id String @id @default(uuid())
+ avatar Bytes? 
  username String
  email String @unique
+ emailInstitutional String @unique
  password String @unique
  role String
-
+ cpf String?
+ titulacao String
+ telefone1 String @unique
+ telefone2 String @unique
+ quiz Quiz[]
+ questoes Questao[]
+ posts Posts[]  
+ address address[]
 }
 
-model Classroom{
+model Posts{
   id String @id @default(uuid())
+  idProfessor String
+  professor Professor @relation(fields: [idProfessor] , references: [id])
+}
+
+model Turmas {
+    id String @id @default(uuid())
+    salas Salas[]
+    idCoordenador String
+    coordenador Coordenador @relation(fields: [idCoordenador] , references: [id])
+}
+model Salas {
+    id String @id @default(uuid())
+    avatar Bytes?
+    idTurma String
+    turma Turmas @relation(fields: [idTurma] , references: [id])
+    alunos Salas_Alunos[]
 }
 model Questao{
  id String @id @default(uuid())
+ title String @db.VarChar(200)
+ text String @db.LongText
+ subject String
+ imageUrl Bytes?
+ alternativa1 String? @db.LongText
+ alternativa2 String? @db.LongText
+ alternativa3 String? @db.LongText
+ alternativa4 String? @db.LongText
+ alternativa5 String? @db.LongText
+ resposta String? @db.LongText
+ 
+  quiz Quiz @relation(fields: [idQuiz] , references: [id])
+  idQuiz String
+  idProfessor String
+  professor Professor @relation(fields: [idProfessor] , references: [id])
+
 }
 model Quiz{
   id String @id @default(uuid())
+  subject String
+  questao Questao[]
+  qtdQuestao Int
+  professor Professor @relation(fields: [idProfessor] , references: [id])
+  aluno Aluno @relation(fields: [idAluno] , references: [id])
+  idProfessor String
+  idAluno String
+
 }
 model OtpUser{
   id String @id
   email String @unique
   otpCode String 
+
+}
+
+
+model Salas_Alunos {
+
+  idAluno String
+  aluno Aluno @relation(fields: [idAluno], references: [id])
+  idSala String
+  sala Salas @relation(fields: [idSala], references: [id])
+  @@id([idAluno, idSala])
 
 }
