@@ -10,6 +10,7 @@ import { AlunoAndUser } from "./types/aluno.interface";
 import { User } from "src/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { filiacaoDto } from "src/dto/filiacao-dto.dto";
+import { FiliacaoService } from "src/filiacao/filiacao.service";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 
@@ -21,10 +22,11 @@ export class AlunoService{
    private readonly logger = new Logger(AlunoService.name)
    constructor(
       private readonly prisma:PrismaService,
-      private readonly user:UserService 
+      private readonly user:UserService, 
+    
    ){}
 
-   async create(alunoCreateDto:AlunoCreateDto):Promise<AlunoAndUser>{
+   async create(alunoCreateDto:AlunoCreateDto):Promise<AlunoAndUser|any>{
  
       try {
          
@@ -36,10 +38,22 @@ export class AlunoService{
 
       const createdAluno = await this.createAluno(alunoCreateDto);
       const createdUser = await this.createUser(createdAluno);
+      const alunoAddress = await this.prisma.aluno.findUnique({
+         where:{
+            id:createdAluno.id
+         },
+         select:{
+            address:true,
+            filiacao:true
+         }
+         
+      })
 
       return {
          aluno:createdAluno,
          user:createdUser,
+         ...alunoAddress 
+ 
       }
       
      } catch (error) {
@@ -48,8 +62,26 @@ export class AlunoService{
       }
 
    } 
-   async createAluno(alunoCreateDto:AlunoCreateDto):Promise<Aluno|null>{
-      
+   async createAluno(alunoCreateDto:AlunoCreateDto):Promise<Aluno>{
+      const filiacaoDados:Prisma.filiacaoCreateWithoutAlunoInput = {
+         username:alunoCreateDto.filiacao.username,
+         tipo_Relacionamento:alunoCreateDto.filiacao.tipo_Relacionamento,
+         telefone1:alunoCreateDto.filiacao.telefone1,
+         telefone2:alunoCreateDto.filiacao.telefone2,
+      }
+      const addressDados:Prisma.addressCreateWithoutAlunoInput = {
+         cep:alunoCreateDto.address.cep,
+         numberHouse:alunoCreateDto.address.numberHouse,
+         bairro:alunoCreateDto.address.bairro,
+         estado:alunoCreateDto.address.estado,
+         cidade:alunoCreateDto.address.cidade,
+         country:alunoCreateDto.address.country,
+         logradouro:alunoCreateDto.address.logradouro,
+         complemento:alunoCreateDto.address.complemento,
+         professor:{},
+         coordenador:{}
+       }
+
       const data:Prisma.AlunoCreateInput = {
          username:alunoCreateDto.username,
          email:alunoCreateDto.email,
@@ -58,34 +90,18 @@ export class AlunoService{
          matricula:alunoCreateDto.matricula,
          turma:alunoCreateDto.turma,
          password: await bcrypt.hash(alunoCreateDto.password,10),
+         filiacao:{
+            create:filiacaoDados
+         },
+         address:{
+            create:addressDados
+         }
       }
+
       const createdAluno = await this.prisma.aluno.create({data});
-
-      const createdFiliacao = await this.createFiliacao(alunoCreateDto.filiacao);
-
-      return createdAluno;
-      
-   }
-   
-   async createFiliacao(filiacao:filiacaoDto):Promise<any>{
-
-      const dataFiliacao:Prisma.filiacaoCreateInput = {
-         id:filiacao.id,
-         telefone1:filiacao.telefone1,
-         username:filiacao.username,
-         telefone2:filiacao.telefone2,
-         tipo_Relacionamento:filiacao.tipo_Relacionamento,
+      return  createdAluno;
 
       }
-      const createANewFiliacao = await this.prisma.filiacao.create({data:dataFiliacao})
-      
-      return createANewFiliacao;
-
-
-   }
-
-
-
    async createUser(createdAluno:Aluno):Promise<User|any>{
       
       const data:Prisma.UserCreateInput = {
@@ -97,7 +113,6 @@ export class AlunoService{
       }
       
       const createdUser = await this.prisma.user.create({data});
-      
       const createdOtpUser = await this.user.createUserOtp(createdUser.id,createdUser.email);
       
       
@@ -116,17 +131,29 @@ export class AlunoService{
          return false
       }
       
-   } 
+   }
+
   async findAlunoById(id:string){
-     return this.prisma.aluno.findUnique({
-      where:{id}
+   
+    return this.prisma.aluno.findUnique({
+      where:{
+       id:id
+      },
+      include:{
+        address:true,
+        filiacao:true
+      }
      })
   }
-   async findAlunoByEmail(email:string):Promise<Aluno>{
+  async findAlunoByEmail(email:string):Promise<Aluno>{
    
       let  alunoByEmail =  await this.prisma.aluno.findUnique({where:{email}});
       return alunoByEmail;  
    
-   }
+  }
+
+
+
+
 
 }

@@ -47,6 +47,11 @@ import { Type } from 'class-transformer';
     @IsString()
     @IsPhoneNumber('BR')
     phoneInstitutional: string;
+
+
+    @ValidateNested()
+    @Type(()=>addressDto)
+    address:addressDto;
     
   
   }

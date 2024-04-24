@@ -12,17 +12,17 @@ import { ProfessorService } from "./professor.service";
 export class ProfessorController{
     constructor(private readonly professorService:ProfessorService){}
 
-    @Post('post')
-    async create(@Body() profCreateDto:ProfessorCreateDto , @Res() res:Response){
-
-     const responseService = await this.professorService.create(profCreateDto);
-    
-     return res.json({
-      message:'Requisition sucesfully',
-      professor:responseService.professor,
-      user:responseService.user     
-     })
-
-    }
+    /**
+     * foi colocado no controller do coordenador
+     @Post('post')
+     async create(@Body() profCreateDto:ProfessorCreateDto , @Res() res:Response){
+      const responseService = await this.professorService.create(profCreateDto);
+      return res.json({
+       message:'Requisition sucesfully',
+      ...responseService 
+      })
+     }
+     * 
+     */
  
 }

@@ -7,6 +7,7 @@ import { ProfessorCreateDto } from "./dto/create-professor.dto";
 import { Professor } from "src/entities/professor.entity";
 import { User } from "src/entities/user.entity";
 import { ProfessorAndUser } from "./types/professor.interface";
+import { UserService } from "src/user/user.service";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 
@@ -16,39 +17,41 @@ import { ProfessorAndUser } from "./types/professor.interface";
 export class ProfessorService{
    
    private readonly logger = new Logger(ProfessorService.name)
-   constructor(private readonly prisma:PrismaService){}
+   constructor(
+      private readonly prisma:PrismaService,
+      private readonly user:UserService
+   ){}
 
-   async create(profCreateDto:ProfessorCreateDto):Promise<ProfessorAndUser>{
- 
+   async create(profCreateDto:ProfessorCreateDto):Promise<ProfessorAndUser|any>{
         try {
-           
-       const verifiedProf = await this.exists(profCreateDto.email);
-         
+       const verifiedProf = await this.exists(profCreateDto.email);  
        if(!verifiedProf){
-
        const createdProfessor = await this.createProf(profCreateDto);
        const createdUser = await this.createUser(createdProfessor);     
- 
+       const professorAddress = await this.prisma.professor.findUnique({
+         where:{
+         id:createdProfessor.id
+         },
+         select:{
+            address:true,
+         }
+       })
+
            return {
               professor:createdProfessor,
-              user:createdUser
+              user:createdUser,
+              ...professorAddress
             }
 
        }else{
-      
        throw new UserExistsException();
-
        }
-
-
-      } catch (error) {
+       } catch (error) {
          this.logger.error(error);
          throw error;
       }
 
    }
-
-
    async exists(email:string):Promise<boolean>{
       const isThereTheSameProf = await this.prisma.professor.findUnique({where:{email}});
       
@@ -61,19 +64,22 @@ export class ProfessorService{
    }
    
    async createProf(profCreateDto:ProfessorCreateDto):Promise<Professor|null>{
+
+      const professorAddress:Prisma.addressCreateWithoutProfessorInput = {
+      ...profCreateDto.address,
       
+      }
       const data:Prisma.ProfessorCreateInput = {
          ...profCreateDto,
          password: await bcrypt.hash(profCreateDto.password,10),
+         address:{
+            create:professorAddress
+         }
       }
-      
       const createdProf = await this.prisma.professor.create({data});
       return createdProf;
-      
    }
-
-   async createUser(createdProf:Professor):Promise<User>{
-      
+   async createUser(createdProf:Professor):Promise<User|any>{
       const data:Prisma.UserCreateInput = {
          id:createdProf.id,
          email:createdProf.email,
@@ -82,24 +88,31 @@ export class ProfessorService{
          
       }
       const createdUser = await this.prisma.user.create({data});
-      
-      return createdUser;
+      const createdOtpUser = await this.user.createUserOtp(createdUser.id,createdUser.email);
+      return {
+         user: createdUser,
+         otpUser:createdOtpUser,
+      };
       
    }
-
+ 
    async findByEmail(email:string):Promise<Professor>{
    
     let  profByEmail =  await this.prisma.professor.findUnique({where:{email}});
     return profByEmail;  
  
- }
+   }
+   async findProfById(id:string):Promise<Professor|null>{
 
-  async findProfById(id:string):Promise<Professor|null>{
-
-   const professor = await this.prisma.professor.findUnique({where:{id}});
+   const professor = await this.prisma.professor.findUnique({
+      where:{
+         id:id
+      },
+      include:{
+         address:true
+      }
+   });
    return professor;
 
-  }
-
-
+   }
 }

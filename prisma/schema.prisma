@@ -21,12 +21,12 @@ model address{
   logradouro String?
   complemento String?
 
-  idAluno String
-  aluno Aluno @relation(fields: [idAluno] , references: [id])
-  idCoordenador String
-  coordenador Coordenador @relation(fields: [idCoordenador] , references: [id])
-  idProfessor String
-  professor Professor @relation(fields: [idProfessor] , references: [id])
+  idAluno String?
+  aluno Aluno? @relation(fields: [idAluno] , references: [id])
+  idCoordenador String?
+  coordenador Coordenador? @relation(fields: [idCoordenador] , references: [id])
+  idProfessor String?
+  professor Professor? @relation(fields: [idProfessor] , references: [id])
 
 }
 
@@ -47,6 +47,8 @@ model filiacao {
   telefone1 String?
   telefone2 String?
 
+ aluno Aluno[]
+
 }
 
 
@@ -59,11 +61,13 @@ emailInstitutional String @unique
 password String @unique
 role String
 matricula String @unique
-turma String @unique
+turma String 
 quiz Quiz[]
 salas Salas_Alunos[]
 address address[]
 
+idFiliacao String?
+filiacao filiacao? @relation(fields: [idFiliacao] , references: [id])
 
 }
 model Coordenador {

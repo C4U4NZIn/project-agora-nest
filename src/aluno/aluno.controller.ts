@@ -11,21 +11,23 @@ import { AlunoService } from "./aluno.service";
 @Controller('aluno')
 export class AlunoController{
     constructor(private readonly alunoService:AlunoService){}
-
-    @Post('post')
-    async create(@Body() alunoCreateDto:AlunoCreateDto , @Res() res:Response){
-
-     const responseService = await this.alunoService.create(alunoCreateDto);
     
-     return res.json({
-      message:'Requisition sucesfully',
-      Aluno: responseService.aluno,
-      user:responseService.user
-      
-     })
+    /**
+     Foi colocado no controller do coordenador
+         @Post('post')
+         async create(@Body() alunoCreateDto:AlunoCreateDto , @Res() res:Response){
+     
+          const responseService = await this.alunoService.create(alunoCreateDto);
+         
+          return res.json({
+           message:'Requisition sucesfully',
+           ...responseService
+          })
+     
+         }
+     * 
+     */
 
-    }
-
-
+ 
   
 }

@@ -46,11 +46,16 @@ export class ProfessorCreateDto extends Professor {
  @IsPhoneNumber('BR')
  telefone2: string;
 
+
  @IsString()
  cpf?: string;
 
  @IsString()
  titulacao: string;
+
+ @ValidateNested()
+ @Type(()=>addressDto)
+ address:addressDto;
 
 
 }

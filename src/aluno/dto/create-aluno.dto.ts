@@ -16,6 +16,7 @@ import { addressDto } from 'src/dto/address-dto.dto';
 import { filiacaoDto } from 'src/dto/filiacao-dto.dto';
 import { filiacao } from '@prisma/client';
 
+
 export class AlunoCreateDto extends Aluno {
   
 
@@ -55,5 +56,9 @@ export class AlunoCreateDto extends Aluno {
   @ValidateNested()
   @Type(()=>filiacaoDto)
   filiacao:filiacaoDto;
+
+  @ValidateNested()
+  @Type(()=>addressDto)
+  address:addressDto;
   
 }

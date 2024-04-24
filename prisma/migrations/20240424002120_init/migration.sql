@@ -9,9 +9,9 @@ CREATE TABLE `address` (
     `country` VARCHAR(191) NOT NULL,
     `logradouro` VARCHAR(191) NULL,
     `complemento` VARCHAR(191) NULL,
-    `idAluno` VARCHAR(191) NOT NULL,
-    `idCoordenador` VARCHAR(191) NOT NULL,
-    `idProfessor` VARCHAR(191) NOT NULL,
+    `idAluno` VARCHAR(191) NULL,
+    `idCoordenador` VARCHAR(191) NULL,
+    `idProfessor` VARCHAR(191) NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -50,13 +50,12 @@ CREATE TABLE `Aluno` (
     `role` VARCHAR(191) NOT NULL,
     `matricula` VARCHAR(191) NOT NULL,
     `turma` VARCHAR(191) NOT NULL,
-    `idFiliacao` VARCHAR(191) NOT NULL,
+    `idFiliacao` VARCHAR(191) NULL,
 
     UNIQUE INDEX `Aluno_email_key`(`email`),
     UNIQUE INDEX `Aluno_emailInstitutional_key`(`emailInstitutional`),
     UNIQUE INDEX `Aluno_password_key`(`password`),
     UNIQUE INDEX `Aluno_matricula_key`(`matricula`),
-    UNIQUE INDEX `Aluno_turma_key`(`turma`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -174,16 +173,16 @@ CREATE TABLE `Salas_Alunos` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `address` ADD CONSTRAINT `address_idAluno_fkey` FOREIGN KEY (`idAluno`) REFERENCES `Aluno`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `address` ADD CONSTRAINT `address_idAluno_fkey` FOREIGN KEY (`idAluno`) REFERENCES `Aluno`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `address` ADD CONSTRAINT `address_idCoordenador_fkey` FOREIGN KEY (`idCoordenador`) REFERENCES `Coordenador`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `address` ADD CONSTRAINT `address_idCoordenador_fkey` FOREIGN KEY (`idCoordenador`) REFERENCES `Coordenador`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `address` ADD CONSTRAINT `address_idProfessor_fkey` FOREIGN KEY (`idProfessor`) REFERENCES `Professor`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `address` ADD CONSTRAINT `address_idProfessor_fkey` FOREIGN KEY (`idProfessor`) REFERENCES `Professor`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Aluno` ADD CONSTRAINT `Aluno_idFiliacao_fkey` FOREIGN KEY (`idFiliacao`) REFERENCES `filiacao`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Aluno` ADD CONSTRAINT `Aluno_idFiliacao_fkey` FOREIGN KEY (`idFiliacao`) REFERENCES `filiacao`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Posts` ADD CONSTRAINT `Posts_idProfessor_fkey` FOREIGN KEY (`idProfessor`) REFERENCES `Professor`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
