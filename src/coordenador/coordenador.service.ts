@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable , Logger } from "@nestjs/common";
+import { Body, HttpException, HttpStatus, Injectable , Logger } from "@nestjs/common";
 import * as bcrypt from 'bcrypt'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from "src/prisma.service";
@@ -8,6 +8,9 @@ import { Coordenador } from "src/entities/coordenador.entity";
 import { User } from "src/entities/user.entity";
 import { CoordenadorAndUser } from "./types/coordenador.interface";
 import { UserService } from "src/user/user.service";
+import { CreateTurmaDto } from "./dto/create-turma.dto";
+import { CreateSala } from "./dto/create-sala.dto";
+import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -130,4 +133,154 @@ export class CoordenadorService{
       return coordenador;
    }
 
+  async createTurma(createTurmaDto:CreateTurmaDto):Promise<any>{
+
+     const data:Prisma.TurmasCreateInput = {
+      ...createTurmaDto
+     }
+
+     const createdTurmaByCoordenador = await this.prisma.turmas.create({data});
+     const TurmasByCoordenador = await this.prisma.coordenador.findUnique({
+      where:{
+         id:createTurmaDto.idCoordenador
+      },
+      select:{
+         turmas:true
+      }
+     })
+
+     return {
+      Turma:createdTurmaByCoordenador,
+      ...TurmasByCoordenador
+     }
+
+  }
+
+  async findAllTurmas(idCoordenador:string):Promise<any>{
+
+   const findAllByIdCoordenador = await this.prisma.coordenador.findMany({where:{
+      id:idCoordenador
+   },
+   select:{
+      turmas:true
+   }
+})
+    
+return findAllByIdCoordenador
+
+
+  }
+  async createSala(createSalaDto:CreateSala):Promise<any>{
+
+
+       const turmaDados:Prisma.TurmasFindUniqueArgs = {
+         where:{
+            id:createSalaDto.idTurma
+         }
+       }
+
+       const professorDados:Prisma.ProfessorFindUniqueArgs = {
+           where:{
+            id:createSalaDto.idProfessor
+           }
+       }
+       
+       const findProfessor = await this.prisma.professor.findUnique(professorDados);
+       const findTurma = await this.prisma.turmas.findUnique(turmaDados);
+       
+
+
+
+      const data:Prisma.SalasCreateInput = {
+          name:createSalaDto.name,
+          avatar:createSalaDto.avatar,
+         turma:{
+            connect:findTurma
+         },
+         professor:{
+            connect:findProfessor
+         },
+         
+      }
+      const createdSala = await this.prisma.salas.create({data});
+
+      const findProfessor2 = await this.prisma.salas.findUnique({
+         where:{
+            id:createdSala.id
+         },
+         select:{
+            professor:true
+         }
+      })
+
+
+
+      return {
+
+       sala:createdSala,
+       professorAssocieted:findProfessor2
+
+      }
+
+
+
+
+
+  }
+  async createAlunoInSalas(createSalasAlunos:SalasAlunosDto):Promise<any>{
+
+   const salaDados:Prisma.SalasFindUniqueArgs = {
+       where:{
+         id:createSalasAlunos.idSala
+       }
+   }
+
+    const alunoDados:Prisma.AlunoFindUniqueArgs = {
+      where:{
+       id:createSalasAlunos.idAluno
+      },
+
+    }
+ 
+
+   const findAlunos = await this.prisma.aluno.findUnique(alunoDados)
+   const findSalaByAluno = await this.prisma.salas.findUnique(salaDados);
+
+
+   const data:Prisma.Salas_AlunosCreateInput = {
+     sala:{
+      connect:findSalaByAluno
+     },
+     aluno:{
+      connect:findAlunos
+     }
+   }
+
+    const createdSalaAlunos = await this.prisma.salas_Alunos.create({data});
+    const findSalasAlunos:Prisma.Salas_AlunosFindManyArgs = {
+       where:{
+         idSala:createdSalaAlunos.idSala
+       },
+       select:{
+         aluno:true
+       }
+   }
+
+    const findAlunosBySala = await this.prisma.salas_Alunos.findMany(findSalasAlunos);
+
+
+
+
+
+    return {
+      AllAlunos:findAlunosBySala,
+      SalaCriada:createdSalaAlunos
+    }
+
+
+  }
+  
+
+
 }
+ 

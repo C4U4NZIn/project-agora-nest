@@ -13,7 +13,7 @@ datasource db {
 model address{
   id String @id @default(uuid())
   cep String
-  numberHouse Int?
+  numberHouse String?
   bairro String
   estado String
   cidade String
@@ -101,6 +101,7 @@ model Professor {
  questoes Questao[]
  posts Posts[]  
  address address[]
+ sala Salas[]
 }
 
 model Posts{
@@ -113,7 +114,8 @@ model Turmas {
     id String @id @default(uuid())
     salas Salas[]
     idCoordenador String
-    coordenador Coordenador @relation(fields: [idCoordenador] , references: [id])
+    coordenador Coordenador? @relation(fields: [idCoordenador] , references: [id])
+    name String @unique
 }
 model Salas {
     id String @id @default(uuid())
@@ -121,6 +123,9 @@ model Salas {
     idTurma String
     turma Turmas @relation(fields: [idTurma] , references: [id])
     alunos Salas_Alunos[]
+    idProfessor String?
+    professor Professor? @relation(fields: [idProfessor] , references: [id])
+    name String @unique
 }
 model Questao{
  id String @id @default(uuid())
@@ -163,9 +168,9 @@ model OtpUser{
 model Salas_Alunos {
 
   idAluno String
-  aluno Aluno @relation(fields: [idAluno], references: [id])
+  aluno Aluno? @relation(fields: [idAluno], references: [id])
   idSala String
-  sala Salas @relation(fields: [idSala], references: [id])
+  sala Salas? @relation(fields: [idSala], references: [id])
   @@id([idAluno, idSala])
 
 }

@@ -2,7 +2,7 @@
 CREATE TABLE `address` (
     `id` VARCHAR(191) NOT NULL,
     `cep` VARCHAR(191) NOT NULL,
-    `numberHouse` INTEGER NULL,
+    `numberHouse` VARCHAR(191) NULL,
     `bairro` VARCHAR(191) NOT NULL,
     `estado` VARCHAR(191) NOT NULL,
     `cidade` VARCHAR(191) NOT NULL,
@@ -111,7 +111,9 @@ CREATE TABLE `Posts` (
 CREATE TABLE `Turmas` (
     `id` VARCHAR(191) NOT NULL,
     `idCoordenador` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
 
+    UNIQUE INDEX `Turmas_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -120,7 +122,10 @@ CREATE TABLE `Salas` (
     `id` VARCHAR(191) NOT NULL,
     `avatar` LONGBLOB NULL,
     `idTurma` VARCHAR(191) NOT NULL,
+    `idProfessor` VARCHAR(191) NULL,
+    `name` VARCHAR(191) NOT NULL,
 
+    UNIQUE INDEX `Salas_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -192,6 +197,9 @@ ALTER TABLE `Turmas` ADD CONSTRAINT `Turmas_idCoordenador_fkey` FOREIGN KEY (`id
 
 -- AddForeignKey
 ALTER TABLE `Salas` ADD CONSTRAINT `Salas_idTurma_fkey` FOREIGN KEY (`idTurma`) REFERENCES `Turmas`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Salas` ADD CONSTRAINT `Salas_idProfessor_fkey` FOREIGN KEY (`idProfessor`) REFERENCES `Professor`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Questao` ADD CONSTRAINT `Questao_idQuiz_fkey` FOREIGN KEY (`idQuiz`) REFERENCES `Quiz`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

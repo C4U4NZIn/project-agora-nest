@@ -152,6 +152,9 @@ export class AlunoService{
    
   }
 
+  async findAllAlunos(){
+    return this.prisma.aluno.findMany();
+  }
 
 
 

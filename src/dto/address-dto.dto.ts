@@ -17,8 +17,8 @@ export class addressDto extends Address {
    
    @IsString()
    cep:string;
-   @IsNumber()
-   numberHouse?:number;
+   @IsString()
+   numberHouse?:string;
    @IsString()
    bairro:string;
    @IsString()

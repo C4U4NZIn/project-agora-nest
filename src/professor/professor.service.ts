@@ -115,4 +115,19 @@ export class ProfessorService{
    return professor;
 
    }
+
+
+   async findAllProfessores(){
+         
+      return this.prisma.professor.findMany();
+      
+   }
+
+
+
+
+
+
+
+
 }

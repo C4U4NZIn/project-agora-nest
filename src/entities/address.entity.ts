@@ -3,7 +3,7 @@
 export class Address{
     id?:string;
     cep:string;
-    numberHouse?:number;
+    numberHouse?:string;
     bairro:string;
     estado:string;
     cidade:string;
