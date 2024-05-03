@@ -25,7 +25,7 @@ import { AlunoModule } from './aluno/aluno.module';
           host:'smtp.sendgrid.net',
           auth:{
             user:'apikey',
-            pass:'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'
+            pass:'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'
           }
         },
         template:{

@@ -59,7 +59,8 @@ export class AuthController{
       const authObject = await this.authService.login(req.user);
       return res.status(202).json({
       status:202,
-      accessToken: authObject.access_token
+      accessToken: authObject.access_token,
+      role:authObject.role
      })
 
     } catch (error) {

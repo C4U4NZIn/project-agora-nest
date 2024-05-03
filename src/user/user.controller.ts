@@ -45,7 +45,7 @@ export class UserController{
      res.json({
         status:202,
         message:'Requisição bem sucedida!',
-        isValid:isValidCode
+        isValidCode:isValidCode
      })    
 
     

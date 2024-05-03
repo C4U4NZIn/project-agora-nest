@@ -66,7 +66,8 @@ export class EmailController{
   return {
     status:202,
     message:'requisição bem sucedida!',
-    createdUserOtp:otpUser,
+    createdUserAntigoOtp:otpUser,
+    novoOtpUser:updatedUser.otpCode
   }
 
  }

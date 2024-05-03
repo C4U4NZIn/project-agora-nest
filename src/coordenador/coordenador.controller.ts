@@ -33,7 +33,6 @@ export class CoordenadorController{
      })
 
     }
-
     @Post('post-aluno')
     async createAluno(@Body() alunoCreateDto:AlunoCreateDto , @Res() res:Response){
         const responseService = await this.alunoService.create(alunoCreateDto);
@@ -42,7 +41,6 @@ export class CoordenadorController{
          ...responseService
         })
     }
-
     @Post('post-professor')
     async createProfessor(@Body() profCreateDto:ProfessorCreateDto , @Res() res:Response){
         const responseService = await this.professorService.create(profCreateDto);
@@ -51,7 +49,6 @@ export class CoordenadorController{
         ...responseService 
         })
     }
-    
     @Post('post-turma')
    async createTurma(@Body() createTurma:CreateTurmaDto):Promise<any>{
 
@@ -68,7 +65,6 @@ export class CoordenadorController{
         ...response
     }
    }
-
    @Post('findAllTurmas')
    async findAllTurmas(@Body() {idCoordenador}:AllTurmasDto, @Res() res:Response):Promise<any>{
 
@@ -86,7 +82,6 @@ export class CoordenadorController{
 
 
    }
-
    @Post('sala')
    async createSala(@Body() createSalaDto:CreateSala , @Res() res:Response){
     
@@ -99,38 +94,40 @@ export class CoordenadorController{
 
 
    }
-
+   @Post('createAlunosInSalas')
+   async createAlunosInSalas(@Body() createSalasAlunos:SalasAlunosDto ,@Res() res:Response){
+       
+       const response = await this.coordenadorService.createAlunoInSalas(createSalasAlunos);
+       
+       res.status(201).json({
+           ...response
+        })
+        
+    }
    @Get('findAllProfessores')
-  async findAllProfs(@Res() res:Response){
+    async findAllProfs(@Res() res:Response){
+     
+     const response = await this.professorService.findAllProfessores();
     
-    const response = await this.professorService.findAllProfessores();
-
-
+    
+     res.status(201).json({
+      ...response
+     })
+    }
+   @Get('findAllAlunos')
+    async findAllAlunos(@Res() res:Response){
+    
+    const response = await this.alunoService.findAllAlunos();
+    
     res.status(201).json({
      ...response
     })
-  }
+    
+    }
+    @Get('findAllSalas')
+    async findAllSalas(){
+        
+    }
 
-  @Get('findAllAlunos')
-  async findAllAlunos(@Res() res:Response){
-
-   const response = await this.alunoService.findAllAlunos();
-
-   res.status(201).json({
-    ...response
-   })
-
-  }
-
-  @Post('createAlunosInSalas')
-  async createAlunosInSalas(@Body() createSalasAlunos:SalasAlunosDto ,@Res() res:Response){
-
-     const response = await this.coordenadorService.createAlunoInSalas(createSalasAlunos);
-
-     res.status(201).json({
-        ...response
-     })
-
-  }
 
 }
