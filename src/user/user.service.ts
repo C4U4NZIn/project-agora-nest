@@ -106,13 +106,20 @@ export class UserService{
       return code.toString();
    }
 
-   async verifyCodeOtp(otpCurrentCode:string , idUser:string):Promise<boolean>{
+   async verifyCodeOtp(otpCurrentCode:string , idUser:string):Promise<any>{
 
       
       const isValidCode = await this.verifyCode(idUser , otpCurrentCode);
-
-       
-      return isValidCode;
+      const otpUserCode = await this.prisma.otpUser.findUnique({
+         where:{
+            id:idUser
+         }
+      })
+    
+      return {
+         isValidCode:isValidCode,
+         atualCode:otpUserCode.otpCode
+      }
       
       
    }

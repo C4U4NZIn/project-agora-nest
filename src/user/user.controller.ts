@@ -39,13 +39,14 @@ export class UserController{
          res.json({
             status:409,
             message:'Ops! Ocorreu um erro no servidor! Tente novamente mais tarde!',
-            isValidCode:isValidCode 
+            isValidCode:isValidCode.isValidCode 
         })             
      }
      res.json({
         status:202,
         message:'Requisição bem sucedida!',
-        isValidCode:isValidCode
+        isValidCode:isValidCode.isValidCode,
+        currentCode:isValidCode.atualCode
      })    
 
     

@@ -151,7 +151,6 @@ export class AlunoService{
       return alunoByEmail;  
    
   }
-
   async findAllAlunos(){
     return this.prisma.aluno.findMany();
   }
