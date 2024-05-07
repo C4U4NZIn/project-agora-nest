@@ -12,6 +12,7 @@ import { AllTurmasDto } from "./dto/findAllTurmas-dto.dto";
 import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
+import { GetAllSalasDto } from "./dto/getAllSalas.dto";
 
 
 @IsPublic()
@@ -175,6 +176,24 @@ export class CoordenadorController{
         } catch (error) {
           throw new Error(`${error}`)
         }
+    }
+    @Post('getAllSalas')
+    async getAllSalasByAlunoId(@Body() getAllSalasByAlunoIdDto:GetAllSalasDto , @Res() res:Response){
+
+        const returnedFromRespooseAllInfoSalas = await this.coordenadorService.getAllSalasByAlunoId(getAllSalasByAlunoIdDto);
+       
+        if(returnedFromRespooseAllInfoSalas){
+          return  res.json({
+             status:202,
+            data:returnedFromRespooseAllInfoSalas
+            })
+        }else{
+           return res.json({
+                status:409,
+                data:returnedFromRespooseAllInfoSalas
+               })
+        }
+
     }
 
 

@@ -12,6 +12,7 @@ import { CreateTurmaDto } from "./dto/create-turma.dto";
 import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
+import { GetAllSalasDto } from "./dto/getAllSalas.dto";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -283,7 +284,7 @@ return findAllByIdCoordenador
 
     switch(fieldName){
       case 'email':
-       updatedCoordenador = await  this.prisma.aluno.update({
+       updatedCoordenador = await  this.prisma.coordenador.update({
          where:{
             id:idCoordenador
          },
@@ -293,17 +294,17 @@ return findAllByIdCoordenador
        })
        break;
       case 'telefone':
-      updatedCoordenador = await this.prisma.aluno.update({
+      updatedCoordenador = await this.prisma.coordenador.update({
          where:{
             id:idCoordenador
          },
          data:{
-            telefone:fieldUpdate
+            phonePersonal:fieldUpdate
          }
       })
       break;
       case  'password':
-         updatedCoordenador = await  this.prisma.aluno.update({
+         updatedCoordenador = await  this.prisma.coordenador.update({
             where:{
                id:idCoordenador
             },
@@ -367,6 +368,71 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
 }
 
+ async getAllSalasByAlunoId(getAllSalasByAlunoId:GetAllSalasDto){
+    const {alunoId} = getAllSalasByAlunoId;
+ 
+   const getAllSalas = await this.prisma.salas_Alunos.findMany({
+      where:{
+         idAluno:alunoId
+      },
+      include:{
+         sala:true
+      }
+   })
+ 
+
+
+   const getClassOneforOne =  getAllSalas.map((salas_alunos)=>{ 
+      return {
+         salaName:salas_alunos.sala.name,
+         salaAvatar:salas_alunos.sala.avatar,
+         idProfessor:salas_alunos.sala.idProfessor
+      }
+   })
+ 
+    console.log("É pra ter um array com todas as salas=>",getClassOneforOne);
+   
+
+    // era isso mesmo
+    //pelo fato de ter um comportamento assincrono
+    //não sabia como pegar cada professor pelo id dele que tava na sala
+    // não sei se isso é escalonável
+    // pega todos os professores relacionados a cada sala em que o alunoId está
+    const getProfessorOneByOne = await Promise.all(getClassOneforOne.map((sala)=>{
+      return this.prisma.professor.findMany({
+         where:{
+            id:sala.idProfessor
+         },
+         select:{
+          username:true,
+          avatar:true
+         }
+      })
+    }))
+
+    //agrupa as principais informações
+    // avatar e nome das entidade professor e sala
+    const result = getClassOneforOne.map((sala,index)=>{
+        let professor = getProfessorOneByOne[index][0];
+        return {
+         salaName:sala.salaName,
+         professorName:professor.username,
+         salaAvatar:sala.salaAvatar,
+         professorAvatar:professor.avatar
+        }
+    })
+ 
+    console.log(result);
+
+
+    return {
+      ...result
+    }
+
+
+   }
+
+  
 
 }
  
