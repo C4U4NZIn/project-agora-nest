@@ -62,6 +62,7 @@ password String @unique
 role String
 matricula String @unique
 turma String 
+telefone String?
 quiz Quiz[]
 salas Salas_Alunos[]
 address address[]

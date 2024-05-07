@@ -11,6 +11,7 @@ import { CreateTurmaDto } from "./dto/create-turma.dto";
 import { AllTurmasDto } from "./dto/findAllTurmas-dto.dto";
 import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
+import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 
 
 @IsPublic()
@@ -127,6 +128,53 @@ export class CoordenadorController{
     @Get('findAllSalas')
     async findAllSalas(){
         
+    }
+
+    @Post('updatePartial')
+    async updateCoordenador(@Body() coordenadorUpdateDto:UpdateCoordenadorDto , @Res() res:Response){
+        const responseUpdatedCoordenador = await this.coordenadorService.updateCoordenadorByParcialField(coordenadorUpdateDto);
+
+        try {
+
+           if(responseUpdatedCoordenador){
+               res.json({
+                   status:202,
+                   updatedAlunoDataParcial:responseUpdatedCoordenador,
+                   message:"Requisição realizada com sucesso"
+               })
+
+           }else{
+               res.json({
+                   status:409,
+                   updatedAlunoDataParcial:'',
+                   message:"Requisição não foi realizada corretamente"
+               })
+           }
+        } catch (error) {
+           throw new Error(`${error}`)
+        }
+    }
+
+    @Delete(':id')
+    async deleteCoordenador(@Param(':id') id:string , @Res() res:Response){
+        const responseFromDeleteCoordenadorService = await this.coordenadorService.deleteCoordenadorById(id);
+
+        try {
+          if(responseFromDeleteCoordenadorService){
+            res.json({
+              status:202,
+              message:"Requisição realizada com sucesso!",
+              response:responseFromDeleteCoordenadorService
+            })
+          }else{
+              res.json({
+                  status:409,
+                  message:"Não foi possível excluir o usuário"
+              })
+          }
+        } catch (error) {
+          throw new Error(`${error}`)
+        }
     }
 
 

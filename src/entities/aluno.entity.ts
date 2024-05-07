@@ -9,5 +9,6 @@ export class Aluno extends User{
    matricula:string;
    turma:string;
    idFiliacao?:string;
+   telefone?:string;
 
 }

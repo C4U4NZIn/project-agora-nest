@@ -11,6 +11,7 @@ import { UserService } from "src/user/user.service";
 import { CreateTurmaDto } from "./dto/create-turma.dto";
 import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
+import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -268,10 +269,6 @@ return findAllByIdCoordenador
 
     const findAlunosBySala = await this.prisma.salas_Alunos.findMany(findSalasAlunos);
 
-
-
-
-
     return {
       AllAlunos:findAlunosBySala,
       SalaCriada:createdSalaAlunos
@@ -279,7 +276,96 @@ return findAllByIdCoordenador
 
 
   }
-  
+  // essa função não vai mudar 
+  async updateCoordenadorByParcialField({fieldUpdate , fieldName , idCoordenador}:UpdateCoordenadorDto):Promise<any>{
+
+   let updatedCoordenador;
+
+    switch(fieldName){
+      case 'email':
+       updatedCoordenador = await  this.prisma.aluno.update({
+         where:{
+            id:idCoordenador
+         },
+         data:{
+            email:fieldUpdate
+         }
+       })
+       break;
+      case 'telefone':
+      updatedCoordenador = await this.prisma.aluno.update({
+         where:{
+            id:idCoordenador
+         },
+         data:{
+            telefone:fieldUpdate
+         }
+      })
+      break;
+      case  'password':
+         updatedCoordenador = await  this.prisma.aluno.update({
+            where:{
+               id:idCoordenador
+            },
+            data:{
+               password:fieldUpdate
+            }
+         })
+         break;
+         
+      }
+
+      //debug de código
+      console.log("aluno id=>",idCoordenador);
+      console.log("fieldName=>",fieldName);
+      console.log("fieldUpdate=>",fieldUpdate);
+
+      
+
+      console.log("updatedAluno=>",updatedCoordenador);
+      return updatedCoordenador;
+}
+
+async deleteCoordenadorById(id:string):Promise<any>{
+  try {
+     
+    id = id.startsWith(':') ? id.slice(1) : id;
+
+     const excludedCoordenador = this.prisma.coordenador.delete({
+         where:{
+            id:id
+         },
+         
+      })
+    const excludeOtpUser = this.prisma.otpUser.delete({
+      where:{
+         id:id
+      }
+    });
+    const excludeUser = this.prisma.user.delete({
+      where:{
+         id:id
+      }
+    })
+
+    
+
+    console.log("id Válido?=>",id);
+
+      return {
+         excludeOtpUser,
+         excludeUser,
+         excludedCoordenador
+      }
+
+      
+      
+         
+  } catch (error) {
+   throw new Error(`${error}`)
+  }
+
+}
 
 
 }

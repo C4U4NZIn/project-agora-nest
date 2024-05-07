@@ -8,7 +8,7 @@ import { Professor } from "src/entities/professor.entity";
 import { User } from "src/entities/user.entity";
 import { ProfessorAndUser } from "./types/professor.interface";
 import { UserService } from "src/user/user.service";
-
+import { UpdateProfessorDto } from "./dto/update-professor.dto";
 //import { AuthService } from '../../src/Auth/auth.service';
 
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -115,8 +115,6 @@ export class ProfessorService{
    return professor;
 
    }
-
-
    async findAllProfessores(){
          
       return this.prisma.professor.findMany();
@@ -124,6 +122,95 @@ export class ProfessorService{
    }
 
 
+   async updateProfessorByParcialField({fieldUpdate , fieldName , idProfessor}:UpdateProfessorDto):Promise<any>{
+
+      let updatedProfessor;
+   
+       switch(fieldName){
+         case 'email':
+          updatedProfessor = await  this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               email:fieldUpdate
+            }
+          })
+          break;
+         case 'telefone':
+         updatedProfessor = await this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               telefone1:fieldUpdate
+            }
+         })
+         break;
+         case  'password':
+            updatedProfessor = await  this.prisma.professor.update({
+               where:{
+                  id:idProfessor
+               },
+               data:{
+                  password:fieldUpdate
+               }
+            })
+            break;
+            
+         }
+   
+         //debug de código
+         console.log("aluno id=>",idProfessor);
+         console.log("fieldName=>",fieldName);
+         console.log("fieldUpdate=>",fieldUpdate);
+   
+         
+   
+         console.log("updatedAluno=>",updatedProfessor);
+         return updatedProfessor;
+   }
+   
+   async deleteProfessorById(id:string):Promise<any>{
+     try {
+        
+       id = id.startsWith(':') ? id.slice(1) : id;
+   
+        const excludedProfessor = this.prisma.professor.delete({
+            where:{
+               id:id
+            },
+            
+         })
+       const excludeOtpUser = this.prisma.otpUser.delete({
+         where:{
+            id:id
+         }
+       });
+       const excludeUser = this.prisma.user.delete({
+         where:{
+            id:id
+         }
+       })
+   
+       
+   
+       console.log("id Válido?=>",id);
+   
+         return {
+            excludeOtpUser,
+            excludeUser,
+            excludedProfessor
+         }
+   
+         
+         
+            
+     } catch (error) {
+      throw new Error(`${error}`)
+     }
+   
+   }
 
 
 

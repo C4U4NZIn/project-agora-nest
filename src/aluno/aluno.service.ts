@@ -11,7 +11,7 @@ import { User } from "src/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { filiacaoDto } from "src/dto/filiacao-dto.dto";
 import { FiliacaoService } from "src/filiacao/filiacao.service";
-
+import { UpdateDtoAluno } from "./dto/update-aluno.dto";
 //import { AuthService } from '../../src/Auth/auth.service';
 
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -155,6 +155,95 @@ export class AlunoService{
     return this.prisma.aluno.findMany();
   }
 
+  async updateAlunoByParcialField({fieldUpdate , fieldName , idAluno}:UpdateDtoAluno):Promise<any>{
+
+      let fieldUpdatedPassword;
+      let updatedAluno;
+     // let fieldNameTotal = fieldName.toLowerCase();
+       switch(fieldName){
+         case 'email':
+          updatedAluno = await  this.prisma.aluno.update({
+            where:{
+               id:idAluno
+            },
+            data:{
+               email:fieldUpdate
+            }
+          })
+          break;
+         case 'telefone':
+         updatedAluno = await this.prisma.aluno.update({
+            where:{
+               id:idAluno
+            },
+            data:{
+               telefone:fieldUpdate
+            }
+         })
+         break;
+         case  'senha':
+           fieldUpdatedPassword = await bcrypt.hash(fieldUpdate,10);
+            updatedAluno = await  this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  password:fieldUpdatedPassword
+               }
+            })
+            break;
+            
+         }
+         console.log("aluno id=>",idAluno);
+         console.log("fieldName=>",fieldName);
+         console.log("fieldUpdate=>",fieldUpdate);
+
+         
+
+         console.log("updatedAluno=>",updatedAluno);
+         return updatedAluno;
+  }
+
+  async deleteAlunoById(id:string):Promise<any>{
+     try {
+        
+       id = id.startsWith(':') ? id.slice(1) : id;
+
+        const excludedAluno = this.prisma.aluno.delete({
+            where:{
+               id:id
+            },
+            
+         })
+       const excludeOtpUser = this.prisma.otpUser.delete({
+         where:{
+            id:id
+         }
+       });
+       const excludeUser = this.prisma.user.delete({
+         where:{
+            id:id
+         }
+       })
+
+       
+
+       console.log("id Válido?=>",id);
+
+         return {
+            excludeOtpUser,
+            excludeUser,
+            excludedAluno
+         }
+
+         
+         
+            
+     } catch (error) {
+      throw new Error(`${error}`)
+     }
+
+  }
 
 
 

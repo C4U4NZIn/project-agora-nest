@@ -8,7 +8,8 @@ import {
     ValidateNested,
     IsBase64,
     IsOptional,
-    IsUUID
+    IsUUID,
+    IsPhoneNumber
   
   }  from 'class-validator'
 import { Aluno } from 'src/entities/aluno.entity';
@@ -40,6 +41,10 @@ export class AlunoCreateDto extends Aluno {
  
   @IsString()
   role:string;
+
+  @IsString()
+  @IsPhoneNumber('BR')
+  telefone?: string;
 
 
 
