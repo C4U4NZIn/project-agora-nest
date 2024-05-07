@@ -384,6 +384,7 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
    const getClassOneforOne =  getAllSalas.map((salas_alunos)=>{ 
       return {
+         salaId:salas_alunos.sala.id,
          salaName:salas_alunos.sala.name,
          salaAvatar:salas_alunos.sala.avatar,
          idProfessor:salas_alunos.sala.idProfessor
@@ -415,6 +416,7 @@ async deleteCoordenadorById(id:string):Promise<any>{
     const result = getClassOneforOne.map((sala,index)=>{
         let professor = getProfessorOneByOne[index][0];
         return {
+         salaId:sala.salaId,  
          salaName:sala.salaName,
          professorName:professor.username,
          salaAvatar:sala.salaAvatar,
