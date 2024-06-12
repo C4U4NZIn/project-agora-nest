@@ -247,17 +247,17 @@ export class AlunoService{
   }
 
   async updateAlunoAvatar(updateAvatar:UpdateAvatarDto):Promise<{
-   message:string , avatar:ArrayBuffer
+   message:string , avatar:any
   }>{
     
-   const bufferAluno = Buffer.from(updateAvatar.avatar);
+   //const bufferAluno = Buffer.from(updateAvatar.avatar);
 
    const updatedAluno = await this.prisma.aluno.update({
       where:{
        id:updateAvatar.alunoId
       },
       data:{
-       avatar:bufferAluno
+       avatar:updateAvatar.avatar
       }
     })
 
