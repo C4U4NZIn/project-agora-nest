@@ -12,6 +12,7 @@ import { UserService } from "src/user/user.service";
 import { filiacaoDto } from "src/dto/filiacao-dto.dto";
 import { FiliacaoService } from "src/filiacao/filiacao.service";
 import { UpdateDtoAluno } from "./dto/update-aluno.dto";
+import { UpdateAvatarDto } from "./dto/update-avatar.dto";
 //import { AuthService } from '../../src/Auth/auth.service';
 
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -245,6 +246,36 @@ export class AlunoService{
 
   }
 
+  async updateAlunoAvatar(updateAvatar:UpdateAvatarDto):Promise<{
+   message:string , avatar:ArrayBuffer
+  }>{
+    
+   const bufferAluno = Buffer.from(updateAvatar.avatar);
+
+   const updatedAluno = await this.prisma.aluno.update({
+      where:{
+       id:updateAvatar.alunoId
+      },
+      data:{
+       avatar:bufferAluno
+      }
+    })
+
+
+    if(updatedAluno){
+      return{
+         message:'Requisição realizado com Sucesso!',
+         avatar:updatedAluno.avatar
+      }
+    }else{
+      return{
+         message:'Requisição não realizada com sucesso',
+         avatar:null
+      }
+    }
+
+
+  }
 
 
 }

@@ -4,6 +4,7 @@ import { IsPublic } from '../Auth/decorators/is-public.decorator';
 import { AlunoCreateDto } from "./dto/create-aluno.dto";
 import { AlunoService } from "./aluno.service";
 import { UpdateDtoAluno } from "./dto/update-aluno.dto";
+import { UpdateAvatarDto } from "./dto/update-avatar.dto";
 
 
 
@@ -76,11 +77,39 @@ export class AlunoController{
           }
       }
 
+    @Post('update-avatar')
+    async updateAvatar(@Body() updateAvatar:UpdateAvatarDto ,  @Res() res:Response){
+      
+      console.log("Ele chega aqui?");
+       console.log("o que tem aqui?=>" , updateAvatar);
+      const buffer = Buffer.from(updateAvatar.avatar);
+
+       console.log("O que é isso?=>" , buffer);
+      
 
 
 
+        try {
+          const resUpdateAvatarService = await this.alunoService.updateAlunoAvatar(updateAvatar);
+          
+          if(resUpdateAvatarService){
+           return res.json({
+            status:202,
+            response:resUpdateAvatarService
+           })
+          }else{
+            return res.json({
+              status:403,
+              response:resUpdateAvatarService
+             })
+          }
 
 
+        } catch (error) {
+          throw new Error(`${error}`);
+        }
+
+      }
 
  
   
