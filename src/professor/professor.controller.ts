@@ -76,6 +76,11 @@ export class ProfessorController{
      }
 
 
+     @Post("update-avatar")
+     async updateAvatarProfessor(){
+
+     }
+
 
 
 }

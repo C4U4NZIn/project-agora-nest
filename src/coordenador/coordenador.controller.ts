@@ -13,6 +13,7 @@ import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
+import { UpdateCoordenadorAvatar } from "./dto/update-avatar.dto";
 
 
 @IsPublic()
@@ -177,22 +178,29 @@ export class CoordenadorController{
           throw new Error(`${error}`)
         }
     }
+    //tirar daqui esse end point e colocar no controller de aluno
+    //assim como o service 
     @Post('getAllSalas')
     async getAllSalasByAlunoId(@Body() getAllSalasByAlunoIdDto:GetAllSalasDto , @Res() res:Response){
 
-        const returnedFromRespooseAllInfoSalas = await this.coordenadorService.getAllSalasByAlunoId(getAllSalasByAlunoIdDto);
+        const returnedFromResponseAllInfoSalas = await this.coordenadorService.getAllSalasByAlunoId(getAllSalasByAlunoIdDto);
        
-        if(returnedFromRespooseAllInfoSalas){
+        if(returnedFromResponseAllInfoSalas){
           return  res.json({
              status:202,
-            data:returnedFromRespooseAllInfoSalas
+            data:returnedFromResponseAllInfoSalas
             })
         }else{
            return res.json({
                 status:409,
-                data:returnedFromRespooseAllInfoSalas
+                data:returnedFromResponseAllInfoSalas
                })
         }
+
+    }
+
+    @Post('update-avatar')
+    async updateCoordenadorAvatar(@Body() updateCoordenadorAvatar:UpdateCoordenadorAvatar){
 
     }
 
