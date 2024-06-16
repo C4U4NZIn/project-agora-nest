@@ -9,6 +9,7 @@ import { User } from "src/entities/user.entity";
 import { ProfessorAndUser } from "./types/professor.interface";
 import { UserService } from "src/user/user.service";
 import { UpdateProfessorDto } from "./dto/update-professor.dto";
+import { UpdateProfessorAvatarDto } from "./dto/CRUD-professor.dto";
 //import { AuthService } from '../../src/Auth/auth.service';
 
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -120,8 +121,6 @@ export class ProfessorService{
       return this.prisma.professor.findMany();
       
    }
-
-
    async updateProfessorByParcialField({fieldUpdate , fieldName , idProfessor}:UpdateProfessorDto):Promise<any>{
 
       let updatedProfessor;
@@ -170,7 +169,6 @@ export class ProfessorService{
          console.log("updatedAluno=>",updatedProfessor);
          return updatedProfessor;
    }
-   
    async deleteProfessorById(id:string):Promise<any>{
      try {
         
@@ -212,6 +210,33 @@ export class ProfessorService{
    
    }
 
+   async updateProfessorAvatar(updateAvatar:UpdateProfessorAvatarDto):Promise<{
+      message:string , avatar:any
+   }>{
+
+       try {
+         
+       const updatedAvatarProfessor = await this.prisma.professor.update({
+         where:{
+            id:updateAvatar.professorId
+         },
+         data:updateAvatar.avatar
+       })
+
+       
+
+       return {
+         message:"Alteração realizada com sucesso!",
+         avatar:updatedAvatarProfessor.avatar
+       }
+
+
+       } catch (error) {
+         throw new Error(`${error}`)
+       }
+
+
+   }
 
 
 

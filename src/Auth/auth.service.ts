@@ -98,7 +98,7 @@ export class AuthService{
 
    switch(role){
 
-    case 'coordenador':
+    case 'Coordenador':
       user = await this.coordenadorService.findCoordenadorById(userId);
       break;
      

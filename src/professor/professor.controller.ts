@@ -6,7 +6,7 @@ import { IsPublic } from '../Auth/decorators/is-public.decorator';
 import { ProfessorCreateDto } from "./dto/create-professor.dto";
 import { ProfessorService } from "./professor.service";
 import { UpdateProfessorDto } from "./dto/update-professor.dto";
-
+import { UpdateProfessorAvatarDto } from "./dto/CRUD-professor.dto";
 @IsPublic()
 @Controller('professor')
 export class ProfessorController{
@@ -75,10 +75,21 @@ export class ProfessorController{
         }
      }
 
-
+     //update avatar from
      @Post("update-avatar")
-     async updateAvatarProfessor(){
+     async updateProfessorAvatar(@Body() updateProfessorAvatar:UpdateProfessorAvatarDto , @Res() res:Response){
+      try {
+        const resUpdatedAvatarProfessor =  await this.professorService.updateProfessorAvatar(updateProfessorAvatar);
+        
+       if(resUpdatedAvatarProfessor){
+         res.json({
+           ...resUpdatedAvatarProfessor
+         })
+       }
 
+      } catch (error) {
+        throw new Error(`${error}`);
+      }
      }
 
 

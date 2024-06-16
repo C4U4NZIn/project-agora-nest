@@ -13,8 +13,7 @@ import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
-import { UpdateCoordenadorAvatar } from "./dto/update-avatar.dto";
-
+import { UpdateCoordenadorAvatar } from "./dto/CRUD-coordenador.dto";
 
 @IsPublic()
 @Controller('coordenador')
@@ -200,9 +199,35 @@ export class CoordenadorController{
     }
 
     @Post('update-avatar')
-    async updateCoordenadorAvatar(@Body() updateCoordenadorAvatar:UpdateCoordenadorAvatar){
+    async updateCoordenadorAvatar(@Body() updateCoordenadorAvatar:UpdateCoordenadorAvatar , @Res() res:Response){
+
+      try {
+        
+     const resUpdatedCoordenadorAvatar = await this.coordenadorService.updateCoordenadorAvatar(updateCoordenadorAvatar);
+
+     if(resUpdatedCoordenadorAvatar){
+        return res.json({
+            ...resUpdatedCoordenadorAvatar
+        })
+     }
+
+      } catch (error) {
+        throw new Error(`${error}`)
+      }
+
 
     }
+
+   @Post('upload-teachers')
+   async uploadTeachers(){
+
+   }
+   @Post('upload-students')
+   async uploadStudents(){
+
+   }
+
+
 
 
 }

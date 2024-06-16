@@ -13,6 +13,7 @@ import { CreateSala } from "./dto/create-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
+import { UpdateCoordenadorAvatar } from "./dto/CRUD-coordenador.dto";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -367,7 +368,8 @@ async deleteCoordenadorById(id:string):Promise<any>{
   }
 
 }
-
+ // colocar no service de aluno e puxar no controller de aluno
+ // aqui está errado
  async getAllSalasByAlunoId(getAllSalasByAlunoId:GetAllSalasDto){
     const {alunoId} = getAllSalasByAlunoId;
  
@@ -434,7 +436,37 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
    }
 
-  
+
+ async updateCoordenadorAvatar(updateCoordenadorAvatar:UpdateCoordenadorAvatar):Promise<
+ {
+   message:string,
+   avatar:any
+ }
+ >{
+
+   
+ try {
+   
+   const updatedCoordenadorAvatar = await this.prisma.coordenador.update({
+      where:{
+         id:updateCoordenadorAvatar.coordenadorId
+      },
+      data:updateCoordenadorAvatar.avatar
+   })
+
+     return {
+      message:'Alteração realizada com sucesso!',
+      avatar:updateCoordenadorAvatar.avatar
+     }
+
+
+ } catch (error) {
+   throw new Error(`${error}`)
+ }
+
+}
+
+
 
 }
  
