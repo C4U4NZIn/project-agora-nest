@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from "src/prisma.service";
 import { UserExistsException } from "src/Auth/errors/user-exists.exception";
-import { ProfessorCreateDto } from "./dto/create-professor.dto";
+import { ProfessorCreateDto } from "./dto/CRUD-professor.dto";
 import { Professor } from "src/entities/professor.entity";
 import { User } from "src/entities/user.entity";
 import { ProfessorAndUser } from "./types/professor.interface";
@@ -33,9 +33,6 @@ export class ProfessorService{
          where:{
          id:createdProfessor.id
          },
-         select:{
-            address:true,
-         }
        })
 
            return {
@@ -66,16 +63,9 @@ export class ProfessorService{
    
    async createProf(profCreateDto:ProfessorCreateDto):Promise<Professor|null>{
 
-      const professorAddress:Prisma.addressCreateWithoutProfessorInput = {
-      ...profCreateDto.address,
-      
-      }
       const data:Prisma.ProfessorCreateInput = {
          ...profCreateDto,
          password: await bcrypt.hash(profCreateDto.password,10),
-         address:{
-            create:professorAddress
-         }
       }
       const createdProf = await this.prisma.professor.create({data});
       return createdProf;
@@ -109,9 +99,6 @@ export class ProfessorService{
       where:{
          id:id
       },
-      include:{
-         address:true
-      }
    });
    return professor;
 
@@ -160,13 +147,6 @@ export class ProfessorService{
          }
    
          //debug de código
-         console.log("aluno id=>",idProfessor);
-         console.log("fieldName=>",fieldName);
-         console.log("fieldUpdate=>",fieldUpdate);
-   
-         
-   
-         console.log("updatedAluno=>",updatedProfessor);
          return updatedProfessor;
    }
    async deleteProfessorById(id:string):Promise<any>{
@@ -209,7 +189,6 @@ export class ProfessorService{
      }
    
    }
-
    async updateProfessorAvatar(updateAvatar:UpdateProfessorAvatarDto):Promise<{
       message:string , avatar:any
    }>{
@@ -223,7 +202,7 @@ export class ProfessorService{
          data:updateAvatar.avatar
        })
 
-       
+
 
        return {
          message:"Alteração realizada com sucesso!",

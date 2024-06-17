@@ -1,10 +1,10 @@
 import { Controller , Get, Post, Delete ,Patch,Body, Req , Res,Param, Put, Request  } from "@nestjs/common";
 import {  Response, response } from "express";
 import { IsPublic } from '../Auth/decorators/is-public.decorator';
-import { AlunoCreateDto } from "./dto/create-aluno.dto";
+import { AlunoCreateDto } from "./dto/CRUD-aluno.dto";
 import { AlunoService } from "./aluno.service";
-import { UpdateDtoAluno } from "./dto/update-aluno.dto";
-import { UpdateAvatarDto } from "./dto/update-avatar.dto";
+import { UpdateDtoAluno } from "./dto/CRUD-aluno.dto";
+import { UpdateAvatarDto } from "./dto/CRUD-aluno.dto";
 
 
 
@@ -80,15 +80,7 @@ export class AlunoController{
     @Post('update-avatar')
     async updateAvatar(@Body() updateAvatar:UpdateAvatarDto ,  @Res() res:Response){
       
-      console.log("Ele chega aqui?");
-       console.log("o que tem aqui?=>" , updateAvatar);
-      const buffer = Buffer.from(updateAvatar.avatar);
-
-       console.log("O que é isso?=>" , buffer);
-      
-
-
-
+  
         try {
           const resUpdateAvatarService = await this.alunoService.updateAlunoAvatar(updateAvatar);
           

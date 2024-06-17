@@ -3,7 +3,7 @@ import { Request, Response, response } from "express";
 import { UserService } from '../user/user.service'
 import { UserCreateDto } from '../dto/create-user.dto'
 import { IsPublic } from '../Auth/decorators/is-public.decorator';
-import { ProfessorCreateDto } from "./dto/create-professor.dto";
+import { ProfessorCreateDto } from "./dto/CRUD-professor.dto";
 import { ProfessorService } from "./professor.service";
 import { UpdateProfessorDto } from "./dto/update-professor.dto";
 import { UpdateProfessorAvatarDto } from "./dto/CRUD-professor.dto";

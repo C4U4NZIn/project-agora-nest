@@ -5,7 +5,6 @@ export class User{
     username:string;
     avatar?:Buffer;
     email:string;
-    emailInstitutional:string;
     password:string;
     role:string; 
 }

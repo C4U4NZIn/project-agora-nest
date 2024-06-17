@@ -8,10 +8,10 @@ import { UserModule } from "src/user/user.module";
 import { AlunoModule } from "src/aluno/aluno.module";
 import { ProfessorModule } from "src/professor/professor.module";
 //import { AuthModule } from "src/Auth/auth.module";
-
+import { FilesModule } from "src/files/files.module";
 
 @Module({
-    imports:[PrismaModule, UserModule , AlunoModule , ProfessorModule],
+    imports:[PrismaModule, UserModule , AlunoModule , ProfessorModule , FilesModule],
     providers:[CoordenadorService],
     controllers:[CoordenadorController],
     exports:[CoordenadorService],

@@ -1,12 +1,12 @@
-import { Controller , Get, Post, Delete ,Patch,Body, Req , Res,Param, Put  } from "@nestjs/common";
+import { Controller , Get, Post, Delete ,Patch,Body, Req , Res,Param, Put, UploadedFile  } from "@nestjs/common";
 import { Request, Response, response } from "express";
 import { IsPublic } from '../Auth/decorators/is-public.decorator';
 import { CoordenadorService } from "./coordenador.service";
-import { CoordenadorCreateDto } from "./dto/create-coordenador.dto";
-import { AlunoCreateDto } from "src/aluno/dto/create-aluno.dto";
+import { CoordenadorCreateDto } from "./dto/CRUD-coordenador.dto";
+import { AlunoCreateDto } from "src/aluno/dto/CRUD-aluno.dto";
 import { ProfessorService } from "src/professor/professor.service";
 import { AlunoService } from "src/aluno/aluno.service";
-import { ProfessorCreateDto } from "src/professor/dto/create-professor.dto";
+import { ProfessorCreateDto } from "src/professor/dto/CRUD-professor.dto";
 import { CreateTurmaDto } from "./dto/create-turma.dto";
 import { AllTurmasDto } from "./dto/findAllTurmas-dto.dto";
 import { CreateSala } from "./dto/create-sala.dto";
@@ -14,6 +14,13 @@ import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
 import { UpdateCoordenadorAvatar } from "./dto/CRUD-coordenador.dto";
+import * as XLSX from 'xlsx'
+import { UseInterceptors } from "@nestjs/common";
+import { FilesService } from "src/files/files.service";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { Express } from "express";
+import { json } from "stream/consumers";
+
 
 @IsPublic()
 @Controller('coordenador')
@@ -21,8 +28,8 @@ export class CoordenadorController{
     constructor(
         private readonly coordenadorService:CoordenadorService,
         private readonly professorService:ProfessorService,
-        private readonly alunoService:AlunoService
-
+        private readonly alunoService:AlunoService,
+        private readonly filesService:FilesService
     ){}
 
     @Post('post')
@@ -218,12 +225,24 @@ export class CoordenadorController{
 
     }
 
+
+    //Cadastros de usuários By xlsx archive
+    @Post('upload-students')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadStudents(@UploadedFile() fileStudentsAccounts:Express.Multer.File , @Res() res:Response){
+       const StudentsAccountsFileToJson = await this.filesService.getAllStudentsAccounts(fileStudentsAccounts);
+      console.log("O que foi processado=>",StudentsAccountsFileToJson);
+       
+      const createdStudentsAccounts = await this.coordenadorService.createStudentsAccounts(StudentsAccountsFileToJson);
+
+
+
+        return res.json({
+            result:createdStudentsAccounts
+        })  
+    }
    @Post('upload-teachers')
    async uploadTeachers(){
-
-   }
-   @Post('upload-students')
-   async uploadStudents(){
 
    }
 

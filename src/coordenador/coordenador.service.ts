@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from "src/prisma.service";
 import { UserExistsException } from "src/Auth/errors/user-exists.exception";
-import { CoordenadorCreateDto } from "./dto/create-coordenador.dto";
+import { CoordenadorCreateDto } from "./dto/CRUD-coordenador.dto";
 import { Coordenador } from "src/entities/coordenador.entity";
 import { User } from "src/entities/user.entity";
 import { CoordenadorAndUser } from "./types/coordenador.interface";
@@ -14,6 +14,10 @@ import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
 import { UpdateCoordenadorAvatar } from "./dto/CRUD-coordenador.dto";
+import { AlunoCreateDto } from "src/aluno/dto/CRUD-aluno.dto";
+import { AlunoService } from "src/aluno/aluno.service";
+import { validate } from "class-validator";
+import { createReadStream } from "fs";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -25,7 +29,8 @@ export class CoordenadorService{
    private readonly logger = new Logger(CoordenadorService.name)
    constructor(
      private readonly prisma:PrismaService,
-     private readonly user:UserService
+     private readonly user:UserService,
+     private readonly alunoService:AlunoService
    ){}
 
    async create(coordenadorCreateDto:CoordenadorCreateDto):Promise<CoordenadorAndUser|any>{
@@ -39,9 +44,6 @@ export class CoordenadorService{
         const coordenadorAddress = await this.prisma.coordenador.findUnique({
          where:{
           id:createdCoordenador.id
-         },
-         select:{
-            address:true,
          }
         })
 
@@ -64,24 +66,10 @@ export class CoordenadorService{
       }
 }
    async createCoordenador(coordenadorCreateDto:CoordenadorCreateDto):Promise<Coordenador|null>{
-         const addressDados:Prisma.addressCreateWithoutCoordenadorInput = {
-      cep:coordenadorCreateDto.address.cep,
-      numberHouse:coordenadorCreateDto.address.numberHouse,
-      bairro:coordenadorCreateDto.address.bairro,
-      estado:coordenadorCreateDto.address.estado,
-      cidade:coordenadorCreateDto.address.cidade,
-      country:coordenadorCreateDto.address.country,
-      logradouro:coordenadorCreateDto.address.logradouro,
-      complemento:coordenadorCreateDto.address.complemento,
-      aluno:{},
-      professor:{}
-     }
+      
       const data:Prisma.CoordenadorCreateInput = {
          ...coordenadorCreateDto,
          password: await bcrypt.hash(coordenadorCreateDto.password,10),
-         address:{
-            create:addressDados
-         }
       }
       const createdCoordenador = await this.prisma.coordenador.create({data});
       return createdCoordenador;
@@ -129,9 +117,6 @@ export class CoordenadorService{
          where:{
             id:id
          },
-         include:{
-            address:true
-         }
       });
       return coordenador;
    }
@@ -300,7 +285,7 @@ return findAllByIdCoordenador
             id:idCoordenador
          },
          data:{
-            phonePersonal:fieldUpdate
+            telefone1:fieldUpdate,
          }
       })
       break;
@@ -316,15 +301,6 @@ return findAllByIdCoordenador
          break;
          
       }
-
-      //debug de código
-      console.log("aluno id=>",idCoordenador);
-      console.log("fieldName=>",fieldName);
-      console.log("fieldUpdate=>",fieldUpdate);
-
-      
-
-      console.log("updatedAluno=>",updatedCoordenador);
       return updatedCoordenador;
 }
 
@@ -456,7 +432,7 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
      return {
       message:'Alteração realizada com sucesso!',
-      avatar:updateCoordenadorAvatar.avatar
+      avatar:updatedCoordenadorAvatar.avatar
      }
 
 
@@ -466,6 +442,66 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
 }
 
+
+  async createStudentsAccounts(studentsAccounts:AlunoCreateDto[]):Promise<any>{
+
+     let createdOneStudent
+     let aux:any[] = []
+     let validateErrors:any[] = []
+     let createdStudentsAccounts:any[]
+     const StudentValidate = new AlunoCreateDto();
+     
+     
+
+     const valitedStudentsAccounts = await Promise.all(
+          studentsAccounts.map(
+            async (student)=>{
+               StudentValidate.username = student.username;
+               StudentValidate.email = student.email;
+               StudentValidate.password = student.password;
+               StudentValidate.role = student.role;
+               StudentValidate.telefone = student.telefone;
+               StudentValidate.matricula = student.matricula;
+               StudentValidate.turma = student.turma;
+               StudentValidate.parent_name = student.parent_name;
+               StudentValidate.telefone_parent_1 = student.telefone_parent_1;
+               StudentValidate.telefone_parent_2 = student.telefone_parent_2;
+            const errors = await validate(StudentValidate);
+            if(errors.length > 0){
+
+            validateErrors.push({
+               student , errors
+            })
+            return null
+            }else{
+
+               createdOneStudent = await this.alunoService.create(student);
+               aux.push({
+                ...createdOneStudent               
+               })
+               
+               return createdOneStudent
+   
+
+
+            }          
+
+
+            })
+     
+     )  
+
+     console.log("Objetos => ",aux)
+
+     console.log("Erros de validação = >" , validateErrors);
+
+     //coloca apenas os objetos válidos
+    createdStudentsAccounts = valitedStudentsAccounts.filter(account => account !== null);
+
+
+     return createdStudentsAccounts
+
+}
 
 
 }

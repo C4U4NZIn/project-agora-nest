@@ -3,16 +3,14 @@ import * as bcrypt from 'bcrypt'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from "src/prisma.service";
 import { UserExistsException } from "src/Auth/errors/user-exists.exception";
-import { AlunoCreateDto } from "./dto/create-aluno.dto";
+import { AlunoCreateDto } from "./dto/CRUD-aluno.dto";
 import { Aluno } from "src/entities/aluno.entity";
 import { JwtService } from "@nestjs/jwt";
 import { AlunoAndUser } from "./types/aluno.interface";
 import { User } from "src/entities/user.entity";
 import { UserService } from "src/user/user.service";
-import { filiacaoDto } from "src/dto/filiacao-dto.dto";
-import { FiliacaoService } from "src/filiacao/filiacao.service";
-import { UpdateDtoAluno } from "./dto/update-aluno.dto";
-import { UpdateAvatarDto } from "./dto/update-avatar.dto";
+import { UpdateDtoAluno } from "./dto/CRUD-aluno.dto";
+import { UpdateAvatarDto } from "./dto/CRUD-aluno.dto";
 //import { AuthService } from '../../src/Auth/auth.service';
 
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -43,10 +41,6 @@ export class AlunoService{
          where:{
             id:createdAluno.id
          },
-         select:{
-            address:true,
-            filiacao:true
-         }
          
       })
 
@@ -64,39 +58,30 @@ export class AlunoService{
 
    } 
    async createAluno(alunoCreateDto:AlunoCreateDto):Promise<Aluno>{
-      const filiacaoDados:Prisma.filiacaoCreateWithoutAlunoInput = {
-         username:alunoCreateDto.filiacao.username,
-         tipo_Relacionamento:alunoCreateDto.filiacao.tipo_Relacionamento,
-         telefone1:alunoCreateDto.filiacao.telefone1,
-         telefone2:alunoCreateDto.filiacao.telefone2,
+
+      //verificar se password existe pra hash n dar erro
+      //supostamente era pra dar certo
+     if(typeof alunoCreateDto.password !== 'string' || alunoCreateDto.password === ''){
+       console.log("O usuário da senha que dá erro=>" , alunoCreateDto)
+      throw new Error("Password tem de ser uma string válida!");
+     
       }
-      const addressDados:Prisma.addressCreateWithoutAlunoInput = {
-         cep:alunoCreateDto.address.cep,
-         numberHouse:alunoCreateDto.address.numberHouse,
-         bairro:alunoCreateDto.address.bairro,
-         estado:alunoCreateDto.address.estado,
-         cidade:alunoCreateDto.address.cidade,
-         country:alunoCreateDto.address.country,
-         logradouro:alunoCreateDto.address.logradouro,
-         complemento:alunoCreateDto.address.complemento,
-         professor:{},
-         coordenador:{}
-       }
+
+
+
 
       const data:Prisma.AlunoCreateInput = {
          username:alunoCreateDto.username,
          email:alunoCreateDto.email,
          role:alunoCreateDto.role,
-         emailInstitutional:alunoCreateDto.emailInstitutional,
          matricula:alunoCreateDto.matricula,
          turma:alunoCreateDto.turma,
+         telefone:alunoCreateDto.telefone,
+         telefone_parent_1:alunoCreateDto.telefone_parent_1,
+         telefone_parent_2:alunoCreateDto.telefone_parent_2,
+         parent_name:alunoCreateDto.parent_name,
          password: await bcrypt.hash(alunoCreateDto.password,10),
-         filiacao:{
-            create:filiacaoDados
-         },
-         address:{
-            create:addressDados
-         }
+
       }
 
       const createdAluno = await this.prisma.aluno.create({data});
@@ -139,10 +124,6 @@ export class AlunoService{
     return this.prisma.aluno.findUnique({
       where:{
        id:id
-      },
-      include:{
-        address:true,
-        filiacao:true
       }
      })
   }
@@ -195,13 +176,6 @@ export class AlunoService{
             break;
             
          }
-         console.log("aluno id=>",idAluno);
-         console.log("fieldName=>",fieldName);
-         console.log("fieldUpdate=>",fieldUpdate);
-
-         
-
-         console.log("updatedAluno=>",updatedAluno);
          return updatedAluno;
   }
 
