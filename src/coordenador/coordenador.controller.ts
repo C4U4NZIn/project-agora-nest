@@ -226,21 +226,24 @@ export class CoordenadorController{
     }
 
 
-    //Cadastros de usuários By xlsx archive
+    //Cadastros de aluos By xlsx archive
     @Post('upload-students')
     @UseInterceptors(FileInterceptor('file'))
     async uploadStudents(@UploadedFile() fileStudentsAccounts:Express.Multer.File , @Res() res:Response){
        const StudentsAccountsFileToJson = await this.filesService.getAllStudentsAccounts(fileStudentsAccounts);
-      console.log("O que foi processado=>",StudentsAccountsFileToJson);
+      
        
-      const createdStudentsAccounts = await this.coordenadorService.createStudentsAccounts(StudentsAccountsFileToJson);
+     if(StudentsAccountsFileToJson.status !== 201){
+        throw new Error("Não existe nenhum aluno no arquivo!");
+     }
 
-
+      const createdStudentsAccounts = await this.coordenadorService.createStudentsAccounts(StudentsAccountsFileToJson.students);
 
         return res.json({
             result:createdStudentsAccounts
         })  
     }
+  //cadastros de professores através de um arquivo xlsx  
    @Post('upload-teachers')
    async uploadTeachers(){
 

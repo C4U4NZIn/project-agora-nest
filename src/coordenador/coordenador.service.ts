@@ -443,16 +443,20 @@ async deleteCoordenadorById(id:string):Promise<any>{
 }
 
 
-  async createStudentsAccounts(studentsAccounts:AlunoCreateDto[]):Promise<any>{
+  async createStudentsAccounts(studentsAccounts:AlunoCreateDto[]):Promise<
+  {
+   status?:number;
+   students?:AlunoCreateDto[],
+   errors?:any[]
+  }
+  >{
 
      let createdOneStudent
      let aux:any[] = []
      let validateErrors:any[] = []
      let createdStudentsAccounts:any[]
+     let errors = []
      const StudentValidate = new AlunoCreateDto();
-     
-     
-
      const valitedStudentsAccounts = await Promise.all(
           studentsAccounts.map(
             async (student)=>{
@@ -468,10 +472,17 @@ async deleteCoordenadorById(id:string):Promise<any>{
                StudentValidate.telefone_parent_2 = student.telefone_parent_2;
             const errors = await validate(StudentValidate);
             if(errors.length > 0){
+           const detailsErros = errors.map((error)=>({
+             property:error.property,
+             constraints:Object.values(error.constraints),
+             value:error.value,
+             children:error.children,
+             context:error.contexts,
+             target:error.target,
+             message:Object.values(error.constraints).join(', ')
 
-            validateErrors.push({
-               student , errors
-            })
+           }))
+            validateErrors.push(detailsErros);
             return null
             }else{
 
@@ -481,9 +492,6 @@ async deleteCoordenadorById(id:string):Promise<any>{
                })
                
                return createdOneStudent
-   
-
-
             }          
 
 
@@ -491,15 +499,28 @@ async deleteCoordenadorById(id:string):Promise<any>{
      
      )  
 
-     console.log("Objetos => ",aux)
+     
+      console.log("Errors =>" , validateErrors);
 
-     console.log("Erros de validação = >" , validateErrors);
+      errors = validateErrors.map((validateError)=>({
+         message:validateError.message
+      }))
 
      //coloca apenas os objetos válidos
     createdStudentsAccounts = valitedStudentsAccounts.filter(account => account !== null);
 
 
-     return createdStudentsAccounts
+     if(validateErrors.length > 0){
+      return{
+         status:400,
+         errors:errors
+      }
+     }else{
+      return{
+         status:201,
+         students:createdStudentsAccounts
+      }
+     }
 
 }
 

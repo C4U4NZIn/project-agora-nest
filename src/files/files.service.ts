@@ -11,7 +11,10 @@ import {
 @Injectable()
 export class FilesService{
 
-async getAllStudentsAccounts(fileStudentsAccounts:Express.Multer.File):Promise<any>{
+async getAllStudentsAccounts(fileStudentsAccounts:Express.Multer.File):Promise<{
+  status?:number;
+  students?:AlunoCreateDto[]
+}>{
  
     //le o arquivo
     const workBook:XLSX.WorkBook = XLSX.read(fileStudentsAccounts.buffer, {
@@ -27,16 +30,8 @@ async getAllStudentsAccounts(fileStudentsAccounts:Express.Multer.File):Promise<a
     dateNF:'YYYY-MM-DD'
   })
 
- /**
-  *
 
-  */
-
- const students:AlunoCreateDto[] = plainToClass(
-    AlunoCreateDto,
-    StudentsAccountsData,
-    {excludeExtraneousValues:false}
-  )
+ const students:AlunoCreateDto[] = StudentsAccountsData.map((student)=> plainToClass(AlunoCreateDto , student));
 
   const validatorOptions:ValidatorOptions = {
     whitelist:true,
@@ -50,11 +45,22 @@ async getAllStudentsAccounts(fileStudentsAccounts:Express.Multer.File):Promise<a
 
   const errors = await validate(students , validatorOptions);
 
- console.log(errors);
+  if(errors.length > 0){
+    const detailErrors = errors.map((error)=>({
+      property:error.property,
+      constraints:error.constraints
+    }))
+    console.log("Os erros de validação=>", detailErrors);
+  }
+
+  console.log(StudentsAccountsData);
 
 
- return StudentsAccountsData
 
+ return {
+  status:201,
+  students:StudentsAccountsData
+ }
 
 }
 
