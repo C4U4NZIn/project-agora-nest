@@ -18,6 +18,8 @@ import { AlunoCreateDto } from "src/aluno/dto/CRUD-aluno.dto";
 import { AlunoService } from "src/aluno/aluno.service";
 import { validate } from "class-validator";
 import { createReadStream } from "fs";
+import { ProfessorCreateDto } from "src/professor/dto/CRUD-professor.dto";
+import { ProfessorService } from "src/professor/professor.service";
 
 
 //import { AuthService } from '../../src/Auth/auth.service';
@@ -30,7 +32,8 @@ export class CoordenadorService{
    constructor(
      private readonly prisma:PrismaService,
      private readonly user:UserService,
-     private readonly alunoService:AlunoService
+     private readonly alunoService:AlunoService,
+     private readonly professorService:ProfessorService
    ){}
 
    async create(coordenadorCreateDto:CoordenadorCreateDto):Promise<CoordenadorAndUser|any>{
@@ -75,6 +78,7 @@ export class CoordenadorService{
       return createdCoordenador;
       
    }
+   //fazer uma anotation de verificação
    async exists(email:string):Promise<boolean>{
       const isThereTheSameCoordenator = await this.prisma.coordenador.findUnique({where:{email}});
       
@@ -97,8 +101,6 @@ export class CoordenadorService{
       }
       const createdUser = await this.prisma.user.create({data});
       const createdOtpUser = await this.user.createUserOtp(createdUser.id,createdUser.email);
-      
-      
       return {
          user: createdUser,
          otpUser:createdOtpUser,
@@ -121,12 +123,11 @@ export class CoordenadorService{
       return coordenador;
    }
 
+  //criar uma turma pelo coordenador
   async createTurma(createTurmaDto:CreateTurmaDto):Promise<any>{
-
      const data:Prisma.TurmasCreateInput = {
       ...createTurmaDto
      }
-
      const createdTurmaByCoordenador = await this.prisma.turmas.create({data});
      const TurmasByCoordenador = await this.prisma.coordenador.findUnique({
       where:{
@@ -136,14 +137,12 @@ export class CoordenadorService{
          turmas:true
       }
      })
-
      return {
       Turma:createdTurmaByCoordenador,
       ...TurmasByCoordenador
      }
-
   }
-
+  //encontrar todas as turmas pelo coordenador
   async findAllTurmas(idCoordenador:string):Promise<any>{
 
    const findAllByIdCoordenador = await this.prisma.coordenador.findMany({where:{
@@ -158,9 +157,9 @@ return findAllByIdCoordenador
 
 
   }
+  //criar uma sala pelo coordenador
+  //professor e alunos
   async createSala(createSalaDto:CreateSala):Promise<any>{
-
-
        const turmaDados:Prisma.TurmasFindUniqueArgs = {
          where:{
             id:createSalaDto.idTurma
@@ -176,9 +175,6 @@ return findAllByIdCoordenador
        const findProfessor = await this.prisma.professor.findUnique(professorDados);
        const findTurma = await this.prisma.turmas.findUnique(turmaDados);
        
-
-
-
       const data:Prisma.SalasCreateInput = {
           name:createSalaDto.name,
           avatar:createSalaDto.avatar,
@@ -200,21 +196,13 @@ return findAllByIdCoordenador
             professor:true
          }
       })
-
-
-
       return {
-
        sala:createdSala,
        professorAssocieted:findProfessor2
-
       }
-
-
-
-
-
   }
+  //função para criar um aluno na sala
+  //fazer função para criar vários alunos na sala
   async createAlunoInSalas(createSalasAlunos:SalasAlunosDto):Promise<any>{
 
    const salaDados:Prisma.SalasFindUniqueArgs = {
@@ -264,6 +252,7 @@ return findAllByIdCoordenador
 
   }
   // essa função não vai mudar 
+  //alterar essa função para funcionar corretamente
   async updateCoordenadorByParcialField({fieldUpdate , fieldName , idCoordenador}:UpdateCoordenadorDto):Promise<any>{
 
    let updatedCoordenador;
@@ -303,7 +292,7 @@ return findAllByIdCoordenador
       }
       return updatedCoordenador;
 }
-
+  //deletar próprio perfil
 async deleteCoordenadorById(id:string):Promise<any>{
   try {
      
@@ -325,20 +314,12 @@ async deleteCoordenadorById(id:string):Promise<any>{
          id:id
       }
     })
-
-    
-
     console.log("id Válido?=>",id);
-
       return {
          excludeOtpUser,
          excludeUser,
          excludedCoordenador
-      }
-
-      
-      
-         
+      }   
   } catch (error) {
    throw new Error(`${error}`)
   }
@@ -346,6 +327,7 @@ async deleteCoordenadorById(id:string):Promise<any>{
 }
  // colocar no service de aluno e puxar no controller de aluno
  // aqui está errado
+ //função que deve estar no aluno
  async getAllSalasByAlunoId(getAllSalasByAlunoId:GetAllSalasDto){
     const {alunoId} = getAllSalasByAlunoId;
  
@@ -411,8 +393,7 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
 
    }
-
-
+   //fazer upload de avatar
  async updateCoordenadorAvatar(updateCoordenadorAvatar:UpdateCoordenadorAvatar):Promise<
  {
    message:string,
@@ -442,7 +423,7 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
 }
 
-
+//criar vários alunos com um arquivo excel
   async createStudentsAccounts(studentsAccounts:AlunoCreateDto[]):Promise<
   {
    status?:number;
@@ -450,16 +431,18 @@ async deleteCoordenadorById(id:string):Promise<any>{
    errors?:any[]
   }
   >{
-
      let createdOneStudent
-     let aux:any[] = []
-     let validateErrors:any[] = []
      let createdStudentsAccounts:any[]
      let errors = []
-     const StudentValidate = new AlunoCreateDto();
-     const valitedStudentsAccounts = await Promise.all(
-          studentsAccounts.map(
-            async (student)=>{
+     let detailsErrors = []
+     let studentsValited
+     let StudentValidate:any 
+     //percorrer todo o objeto e verificar a existencia de erros
+     //agrupar os erros
+     let valitedStudentsAccounts = await Promise.all(
+        studentsAccounts.map(
+           async (student)=>{
+               StudentValidate = new AlunoCreateDto();
                StudentValidate.username = student.username;
                StudentValidate.email = student.email;
                StudentValidate.password = student.password;
@@ -470,47 +453,65 @@ async deleteCoordenadorById(id:string):Promise<any>{
                StudentValidate.parent_name = student.parent_name;
                StudentValidate.telefone_parent_1 = student.telefone_parent_1;
                StudentValidate.telefone_parent_2 = student.telefone_parent_2;
-            const errors = await validate(StudentValidate);
-            if(errors.length > 0){
-           const detailsErros = errors.map((error)=>({
-             property:error.property,
-             constraints:Object.values(error.constraints),
-             value:error.value,
-             children:error.children,
-             context:error.contexts,
-             target:error.target,
-             message:Object.values(error.constraints).join(', ')
+             studentsValited = await validate(StudentValidate);
+            if(studentsValited.length > 0){
+             detailsErrors = detailsErrors.concat(
+               studentsValited.map((studentValited:any)=>({
+                  property:studentValited.property,
+                  constraints:Object.values(studentValited.constraints),
+                  value:studentValited.value,
+                  children:studentValited.children,
+                  context:studentValited.contexts,
+                  target:studentValited.target,
+                  message:Object.values(studentValited.constraints).join(', ')
+                }))
+             )
 
-           }))
-            validateErrors.push(detailsErros);
             return null
-            }else{
-
-               createdOneStudent = await this.alunoService.create(student);
-               aux.push({
-                ...createdOneStudent               
-               })
-               
-               return createdOneStudent
-            }          
-
-
-            })
-     
+        }
+         })
      )  
+   //cadastrar usuários temporários
+   if(detailsErrors.length <= 0){
+       valitedStudentsAccounts = await Promise.all(
+         studentsAccounts.map( async (student)=>{
+            StudentValidate = new AlunoCreateDto();
+            StudentValidate.username = student.username;
+            StudentValidate.email = student.email;
+            StudentValidate.password = student.password;
+            StudentValidate.role = student.role;
+            StudentValidate.telefone = student.telefone;
+            StudentValidate.matricula = student.matricula;
+            StudentValidate.turma = student.turma;
+            StudentValidate.parent_name = student.parent_name;
+            StudentValidate.telefone_parent_1 = student.telefone_parent_1;
+            StudentValidate.telefone_parent_2 = student.telefone_parent_2;
+      
 
+            createdOneStudent = await this.alunoService.create(student);
+            return createdOneStudent;
+  
+       
+
+         })
+       )
+   }     
+     errors = await Promise.all(
+      detailsErrors.map((error)=>{
+         return {
+            matricula:error.target.matricula,
+            value:error.value,
+            message:error.message,
+         }
+      })
+     )
      
-      console.log("Errors =>" , validateErrors);
+     
+      //coloca apenas os objetos válidos
+   // createdStudentsAccounts = valitedStudentsAccounts.filter(account => account !== null);
+   
 
-      errors = validateErrors.map((validateError)=>({
-         message:validateError.message
-      }))
-
-     //coloca apenas os objetos válidos
-    createdStudentsAccounts = valitedStudentsAccounts.filter(account => account !== null);
-
-
-     if(validateErrors.length > 0){
+     if(detailsErrors.length > 0){
       return{
          status:400,
          errors:errors
@@ -523,7 +524,112 @@ async deleteCoordenadorById(id:string):Promise<any>{
      }
 
 }
+//criar vários professores com um arquivo excel
+async createTeachersAccounts(teachersAccounts:ProfessorCreateDto[]):Promise<{
+   status?:number;
+   teachers?:ProfessorCreateDto[],
+   errors?:any[]
+}>{
 
+    let createdOneTeacher
+    let createdTeachersAccounts:any[]
+    let errors = []
+    let detailsErrors = []
+    let teachersValited
+    let TeacherValidate:any
+    
+    let valitedTeachersAccounts = await Promise.all(
+      teachersAccounts.map(
+         async (teacher)=>{
+             TeacherValidate = new ProfessorCreateDto();
+             TeacherValidate.username = teacher.username;
+             TeacherValidate.email = teacher.email;
+             TeacherValidate.password = teacher.password;
+             TeacherValidate.role = teacher.role;
+             TeacherValidate.telefone1 = teacher.telefone1;
+             TeacherValidate.telefone2 = teacher.telefone2;
+             TeacherValidate.email_profissional = teacher.email_profissional;
+             TeacherValidate.subject = teacher.subject;
+             TeacherValidate.cpf = teacher.cpf;
+             TeacherValidate.endereco = teacher.endereco;
+             TeacherValidate.titulacao = teacher.titulacao;
+           teachersValited = await validate(TeacherValidate);
+          if(teachersValited.length > 0){
+           detailsErrors = detailsErrors.concat(
+             teachersValited.map((teacherValited:any)=>({
+                property:teacherValited.property,
+                constraints:Object.values(teacherValited.constraints),
+                value:teacherValited.value,
+                children:teacherValited.children,
+                context:teacherValited.contexts,
+                target:teacherValited.target,
+                message:Object.values(teacherValited.constraints).join(', ')
+   
+              }))
+           )
+
+          return null
+      }
+       })
+
+      
+
+       
+   )  
+ //cadastrar usuários temporários
+ if(detailsErrors.length <= 0){
+     valitedTeachersAccounts = await Promise.all(
+       teachersAccounts.map( async (teacher)=>{
+         TeacherValidate = new ProfessorCreateDto();
+         TeacherValidate.username = teacher.username;
+         TeacherValidate.email = teacher.email;
+         TeacherValidate.password = teacher.password;
+         TeacherValidate.role = teacher.role;
+         TeacherValidate.telefone1 = teacher.telefone1;
+         TeacherValidate.telefone2 = teacher.telefone2;
+         TeacherValidate.email_profissional = teacher.email_profissional;
+         TeacherValidate.subject = teacher.subject;
+         TeacherValidate.cpf = teacher.cpf;
+         TeacherValidate.endereco = teacher.endereco;
+         TeacherValidate.titulacao = teacher.titulacao;    
+
+          createdOneTeacher = await this.professorService.create(teacher);
+          return createdOneTeacher;
+
+     
+
+       })
+     )
+ }     
+   
+   errors = await Promise.all(
+    detailsErrors.map((error)=>{
+       return {
+          value:error.value,
+          message:error.message,
+       }
+    })
+   )
+   
+   
+    //coloca apenas os objetos válidos
+ // createdStudentsAccounts = valitedStudentsAccounts.filter(account => account !== null);
+ 
+
+   if(detailsErrors.length > 0){
+    return{
+       status:400,
+       errors:errors
+    }
+   }else{
+    return{
+       status:201,
+       teachers:createdTeachersAccounts
+    }
+   }
+
+
+}
 
 }
  

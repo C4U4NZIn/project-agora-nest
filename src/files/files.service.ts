@@ -8,11 +8,14 @@ import {
 import {
   plainToClass
 } from 'class-transformer'
+import { ProfessorCreateDto } from "src/professor/dto/CRUD-professor.dto";
 @Injectable()
 export class FilesService{
 
+
+//deixar o backend mais limpo depois
+
 async getAllStudentsAccounts(fileStudentsAccounts:Express.Multer.File):Promise<{
-  status?:number;
   students?:AlunoCreateDto[]
 }>{
  
@@ -31,35 +34,32 @@ async getAllStudentsAccounts(fileStudentsAccounts:Express.Multer.File):Promise<{
   })
 
 
- const students:AlunoCreateDto[] = StudentsAccountsData.map((student)=> plainToClass(AlunoCreateDto , student));
+ return {
+  students:StudentsAccountsData
+ }
 
-  const validatorOptions:ValidatorOptions = {
-    whitelist:true,
-    skipMissingProperties:false,
-    forbidUnknownValues:true,
-    validationError:{
-        target:false,
-        value:false
-    }
-  }
+}
 
-  const errors = await validate(students , validatorOptions);
+async getAllTeachersAccounts(fileTeachersAccounts:Express.Multer.File):Promise<{
+  teachers?:ProfessorCreateDto[]
+}>{
 
-  if(errors.length > 0){
-    const detailErrors = errors.map((error)=>({
-      property:error.property,
-      constraints:error.constraints
-    }))
-    console.log("Os erros de validação=>", detailErrors);
-  }
+  const workBook:XLSX.WorkBook = XLSX.read(fileTeachersAccounts.buffer, {
+    type:'buffer',
+    cellDates:true,
+    cellNF:false
+   });
 
-  console.log(StudentsAccountsData);
+  const sheetName = workBook.SheetNames[0];
+  const sheet:XLSX.WorkSheet = workBook.Sheets[sheetName];
 
+  const TeachersAccountsData:ProfessorCreateDto[] = XLSX.utils.sheet_to_json(sheet , {
+    dateNF:'YYYY-MM-DD'
+  })
 
 
  return {
-  status:201,
-  students:StudentsAccountsData
+  teachers:TeachersAccountsData
  }
 
 }
