@@ -9,12 +9,13 @@ import { AlunoModule } from "src/aluno/aluno.module";
 import { ProfessorModule } from "src/professor/professor.module";
 //import { AuthModule } from "src/Auth/auth.module";
 import { FilesModule } from "src/files/files.module";
+import { VerifyUsersExistenceService } from "./functions/coordenador-functions";
 
 @Module({
     imports:[PrismaModule, UserModule , AlunoModule , ProfessorModule , FilesModule],
-    providers:[CoordenadorService],
+    providers:[CoordenadorService , VerifyUsersExistenceService],
     controllers:[CoordenadorController],
-    exports:[CoordenadorService],
+    exports:[CoordenadorService, VerifyUsersExistenceService],
 })
 
 export class CoordenadorModule{}

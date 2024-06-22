@@ -1,11 +1,24 @@
 import {
 
  IsUUID,
- IsString
+ IsString,
+ IsArray,
+ ValidateNested
 
 
 } from 'class-validator'
+import {
+  Type
+} from 'class-transformer'
 
+
+//puxar a classe alunoId depois
+
+export class AlunoId{
+    @IsUUID()
+    @IsString()
+    alunoId:string;
+}
 
 
 export class SalasAlunosDto{
@@ -13,11 +26,12 @@ export class SalasAlunosDto{
     
     @IsUUID()
     @IsString()
-    idSala:string;
+    salaId:string;
         
-    @IsUUID()
-    @IsString()
-    idAluno:string;
+    @IsArray()
+    @ValidateNested({each:true})
+    @Type(()=>AlunoId)
+    alunosId:AlunoId[]
   
 
 

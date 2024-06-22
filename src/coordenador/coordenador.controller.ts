@@ -7,9 +7,9 @@ import { AlunoCreateDto } from "src/aluno/dto/CRUD-aluno.dto";
 import { ProfessorService } from "src/professor/professor.service";
 import { AlunoService } from "src/aluno/aluno.service";
 import { ProfessorCreateDto } from "src/professor/dto/CRUD-professor.dto";
-import { CreateTurmaDto } from "./dto/create-turma.dto";
+import { CreateTurmaDto, DeleteTurmaDto } from "./dto/CRUD-turma.dto";
 import { AllTurmasDto } from "./dto/findAllTurmas-dto.dto";
-import { CreateSala } from "./dto/create-sala.dto";
+import { CreateSala } from "./dto/CRUD-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
 import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
@@ -20,6 +20,7 @@ import { FilesService } from "src/files/files.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Express } from "express";
 import { json } from "stream/consumers";
+import { VerifyUsersExistenceService } from "./functions/coordenador-functions";
 
 
 @IsPublic()
@@ -29,7 +30,8 @@ export class CoordenadorController{
         private readonly coordenadorService:CoordenadorService,
         private readonly professorService:ProfessorService,
         private readonly alunoService:AlunoService,
-        private readonly filesService:FilesService
+        private readonly filesService:FilesService,
+        private readonly verifyUsersService:VerifyUsersExistenceService
     ){}
 
     @Post('post')
@@ -91,14 +93,22 @@ export class CoordenadorController{
 
 
    }
+   //fazer um endpoint apenas no criar sala
+   //passar um dto com um array de id de alunos e professores
    @Post('sala')
    async createSala(@Body() createSalaDto:CreateSala , @Res() res:Response){
     
-     const response = await this.coordenadorService.createSala(createSalaDto);
+     const responseCoordenadorService = await this.coordenadorService.createSala(createSalaDto);
 
+     if(responseCoordenadorService.status !== 201){
+      return res.status(400).json({
+        status:responseCoordenadorService.status,
+        message:"Impossível cadastrar os alunos e o professor a sala"
+    })
+     }
 
      return res.status(201).json({
-         ...response
+         ...responseCoordenadorService
      })
 
 
@@ -137,7 +147,6 @@ export class CoordenadorController{
     async findAllSalas(){
         
     }
-
     @Post('updatePartial')
     async updateCoordenador(@Body() coordenadorUpdateDto:UpdateCoordenadorDto , @Res() res:Response){
         const responseUpdatedCoordenador = await this.coordenadorService.updateCoordenadorByParcialField(coordenadorUpdateDto);
@@ -162,9 +171,8 @@ export class CoordenadorController{
            throw new Error(`${error}`)
         }
     }
-
-    @Delete(':id')
-    async deleteCoordenador(@Param(':id') id:string , @Res() res:Response){
+    @Delete('coordenador/:id')
+    async deleteCoordenador(@Param('id') id:string , @Res() res:Response){
         const responseFromDeleteCoordenadorService = await this.coordenadorService.deleteCoordenadorById(id);
 
         try {
@@ -204,7 +212,6 @@ export class CoordenadorController{
         }
 
     }
-
     @Post('update-avatar')
     async updateCoordenadorAvatar(@Body() updateCoordenadorAvatar:UpdateCoordenadorAvatar , @Res() res:Response){
 
@@ -224,8 +231,6 @@ export class CoordenadorController{
 
 
     }
-
-
     //Cadastros de aluos By xlsx archive
     @Post('upload-students')
     @UseInterceptors(FileInterceptor('students-files'))
@@ -279,6 +284,46 @@ export class CoordenadorController{
               })  
 
     }
+
+
+   }
+ 
+   @Delete('turma/:id')
+   async deleteTurmaById(
+    @Param('id') turmaId:string ,
+    @Body() {coordenadorId}:DeleteTurmaDto,
+    @Res() res:Response
+  
+  ){
+
+ 
+    try {
+       
+      // turmaId = turmaId.startsWith(':') ? turmaId.slice(1) : turmaId;
+
+      const responseDeletedTurma = await this.coordenadorService.deleteTurmaById({
+        turmaId:turmaId,
+        coordenadorId:coordenadorId
+      })
+
+      if(responseDeletedTurma.status !== 200){
+        res.status(400).json({
+          status:responseDeletedTurma.status,
+          message:responseDeletedTurma.message
+        })
+      }else{
+        res.status(200).json({
+          status:responseDeletedTurma.status,
+          message:responseDeletedTurma.message
+        })
+      }
+
+
+    } catch (error) {
+      throw new Error(`${error}`)
+    }
+
+
 
 
    }
