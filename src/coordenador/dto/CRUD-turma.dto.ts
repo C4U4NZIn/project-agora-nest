@@ -63,3 +63,14 @@ export class DeleteTurmaDto{
     coordenadorPassword?:string;
 
 }
+
+export class DeleteTurmaAlunoDto{
+ 
+   @IsUUID()
+   @IsString()
+   alunoId:string;
+
+   @IsUUID()
+   @IsString()
+   turmaId:string;
+}

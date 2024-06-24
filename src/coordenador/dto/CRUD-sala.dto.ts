@@ -53,3 +53,13 @@ export class CreateSala{
    
     
   }
+
+export class DeleteSala_AlunosDto{
+  
+  @IsUUID()
+  @IsString()
+  alunoId:string;
+  @IsUUID()
+  @IsString()
+  salaId:string;
+}
