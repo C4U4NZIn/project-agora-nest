@@ -11,7 +11,7 @@ import { CreateTurmaDto, DeleteTurmaDto } from "./dto/CRUD-turma.dto";
 import { AllTurmasDto } from "./dto/findAllTurmas-dto.dto";
 import { CreateSala } from "./dto/CRUD-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
-import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
+import { UpdateCoordenadorDto } from "./dto/CRUD-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
 import { UpdateCoordenadorAvatar } from "./dto/CRUD-coordenador.dto";
 import * as XLSX from 'xlsx'
@@ -20,7 +20,7 @@ import { FilesService } from "src/files/files.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Express } from "express";
 import { json } from "stream/consumers";
-import { VerifyUsersExistenceService } from "./functions/coordenador-functions";
+import { VerifyUsersExistenceService } from "./functions/coordenadorFunctions";
 
 
 @IsPublic()
@@ -31,7 +31,7 @@ export class CoordenadorController{
         private readonly professorService:ProfessorService,
         private readonly alunoService:AlunoService,
         private readonly filesService:FilesService,
-        private readonly verifyUsersService:VerifyUsersExistenceService
+       // private readonly verifyUsersService:VerifyUsersExistenceService
     ){}
 
     @Post('post')
@@ -61,20 +61,38 @@ export class CoordenadorController{
         })
     }
     @Post('post-turma')
-   async createTurma(@Body() createTurma:CreateTurmaDto):Promise<any>{
+   async createTurma(@Body() createTurma:CreateTurmaDto , @Res() res:Response):Promise<any>{
 
     const response = await this.coordenadorService.createTurma(createTurma);
 
     if(!response){
-        return {
-            message:"requisition Uncessfully!"
-        }
+         return res.status(400).json({
+          message:'Requisição mal sucedida! Tente de novo!'
+         })
     }
 
-    return {
-        message:"requisition Sucessfully!",
-        ...response
-    }
+    return res.status(201).json({
+      message:"Turma criada com sucesso!",
+      ...response
+    })
+   }
+   @Post('sala')
+   async createSala(@Body() createSalaDto:CreateSala , @Res() res:Response){
+    
+     const responseCoordenadorService = await this.coordenadorService.createSala(createSalaDto);
+
+     if(responseCoordenadorService.status !== 201){
+      return res.status(400).json({
+        status:responseCoordenadorService.status,
+        message:"Impossível cadastrar os alunos e o professor na sala"
+    })
+     }
+
+     return res.status(201).json({
+         ...responseCoordenadorService
+     })
+
+
    }
    @Post('findAllTurmas')
    async findAllTurmas(@Body() {idCoordenador}:AllTurmasDto, @Res() res:Response):Promise<any>{
@@ -93,36 +111,6 @@ export class CoordenadorController{
 
 
    }
-   //fazer um endpoint apenas no criar sala
-   //passar um dto com um array de id de alunos e professores
-   @Post('sala')
-   async createSala(@Body() createSalaDto:CreateSala , @Res() res:Response){
-    
-     const responseCoordenadorService = await this.coordenadorService.createSala(createSalaDto);
-
-     if(responseCoordenadorService.status !== 201){
-      return res.status(400).json({
-        status:responseCoordenadorService.status,
-        message:"Impossível cadastrar os alunos e o professor a sala"
-    })
-     }
-
-     return res.status(201).json({
-         ...responseCoordenadorService
-     })
-
-
-   }
-   @Post('createAlunosInSalas')
-   async createAlunosInSalas(@Body() createSalasAlunos:SalasAlunosDto ,@Res() res:Response){
-       
-       const response = await this.coordenadorService.createAlunoInSalas(createSalasAlunos);
-       
-       res.status(201).json({
-           ...response
-        })
-        
-    }
    @Get('findAllProfessores')
     async findAllProfs(@Res() res:Response){
      
@@ -169,27 +157,6 @@ export class CoordenadorController{
            }
         } catch (error) {
            throw new Error(`${error}`)
-        }
-    }
-    @Delete('coordenador/:id')
-    async deleteCoordenador(@Param('id') id:string , @Res() res:Response){
-        const responseFromDeleteCoordenadorService = await this.coordenadorService.deleteCoordenadorById(id);
-
-        try {
-          if(responseFromDeleteCoordenadorService){
-            res.json({
-              status:202,
-              message:"Requisição realizada com sucesso!",
-              response:responseFromDeleteCoordenadorService
-            })
-          }else{
-              res.json({
-                  status:409,
-                  message:"Não foi possível excluir o usuário"
-              })
-          }
-        } catch (error) {
-          throw new Error(`${error}`)
         }
     }
     //tirar daqui esse end point e colocar no controller de aluno
@@ -287,7 +254,6 @@ export class CoordenadorController{
 
 
    }
- 
    @Delete('turma/:id')
    async deleteTurmaById(
     @Param('id') turmaId:string ,
@@ -296,7 +262,6 @@ export class CoordenadorController{
   
   ){
 
- 
     try {
        
       // turmaId = turmaId.startsWith(':') ? turmaId.slice(1) : turmaId;

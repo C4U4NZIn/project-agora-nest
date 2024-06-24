@@ -29,6 +29,9 @@ export class CoordenadorCreateDto extends Coordenador {
  
     @IsString()
     username:string;
+
+    @IsString()
+    name_instituicao: string;
    
     @IsString()
     role:string;

@@ -8,20 +8,21 @@ import { Coordenador } from "src/entities/coordenador.entity";
 import { User } from "src/entities/user.entity";
 import { CoordenadorAndUser } from "./types/coordenador.interface";
 import { UserService } from "src/user/user.service";
-import { CreateTurmaDto, DeleteTurmaDto } from "./dto/CRUD-turma.dto";
+import { CreateStudentsInTurmaDto, CreateTurmaDto, DeleteTurmaDto } from "./dto/CRUD-turma.dto";
 import { CreateSala } from "./dto/CRUD-sala.dto";
 import { SalasAlunosDto } from "./dto/create-alunoSalas.dto";
-import { UpdateCoordenadorDto } from "./dto/update-coordenador.dto";
+import { UpdateCoordenadorDto } from "./dto/CRUD-coordenador.dto";
 import { GetAllSalasDto } from "./dto/getAllSalas.dto";
 import { UpdateCoordenadorAvatar } from "./dto/CRUD-coordenador.dto";
-import { AlunoCreateDto } from "src/aluno/dto/CRUD-aluno.dto";
+import { AlunoCreateDto, UpdateDtoAluno } from "src/aluno/dto/CRUD-aluno.dto";
 import { AlunoService } from "src/aluno/aluno.service";
 import { validate } from "class-validator";
 import { createReadStream } from "fs";
-import { ProfessorCreateDto } from "src/professor/dto/CRUD-professor.dto";
+import { ProfessorCreateDto, UpdateProfessorDto } from "src/professor/dto/CRUD-professor.dto";
 import { ProfessorService } from "src/professor/professor.service";
 import { AlunoId } from "./dto/create-alunoSalas.dto";
-import { VerifyUsersExistenceService } from "./functions/coordenador-functions";
+import { VerifyUsersExistenceService } from "./functions/coordenadorFunctions";
+import { throwError } from "rxjs";
 
 //import { AuthService } from '../../src/Auth/auth.service';
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -80,7 +81,6 @@ export class CoordenadorService{
       return createdCoordenador;
       
    }
-   //fazer uma anotation de verificação
    async exists(email:string):Promise<boolean>{
       const isThereTheSameCoordenator = await this.prisma.coordenador.findUnique({where:{email}});
       
@@ -109,206 +109,555 @@ export class CoordenadorService{
       };
       
    }
-   //Show the profile user by email
-   async findCoordenadorByEmail(email:string):Promise<Coordenador>{
-   
-    let  coordenadorByEmail =  await this.prisma.coordenador.findUnique({where:{email}});
-    return coordenadorByEmail;  
-   
-   }
-   async findCoordenadorById(id:string):Promise<Coordenador|null>{
-      const coordenador = await this.prisma.coordenador.findUnique({
-         where:{
-            id:id
-         },
-      });
-      return coordenador;
-   }
-
-  //criar uma turma pelo coordenador
-  //os dados criados ficarão desconexos
-  //pq o turma dos alunos é aleatório
   async createTurma(createTurmaDto:CreateTurmaDto):Promise<any>{
-     const turmaCreateInputData:Prisma.TurmaCreateInput = {
-      ...createTurmaDto
+     try {
+     const isExistAllStudents = await this.verifyUsersService.verifyAllStudentsExistence(createTurmaDto.alunosId); 
+     const isExistCoordenador = await this.verifyUsersService.verifyCoordenadorExistence(createTurmaDto);
+      if(isExistAllStudents.isValid && isExistCoordenador.isExistCoordenador){
+         const turmaCreateInputData:Prisma.TurmaCreateInput = {
+            ...createTurmaDto
+           }
+           const createdTurmaByCoordenador = await this.prisma.turma.create({data:turmaCreateInputData});
+           //criar a turma e depois criar os alunos na turma
+           const createdStudentsInTurma = await this.createStudentsInTurma({
+            turmaId:createdTurmaByCoordenador.id,
+            alunosId:createTurmaDto.alunosId
+           })
+           return {
+            status:201,
+            Turma:createdTurmaByCoordenador,
+            AlunosInTurma:createdStudentsInTurma
+           }
+      }else{
+         return{
+            status:400
+         }
+      }
+   
+    } catch (error) {
+      throw new Error(`${error}`)
      }
-     const createdTurmaByCoordenador = await this.prisma.turma.create({data:turmaCreateInputData});
-     const TurmasByCoordenador = await this.prisma.coordenador.findUnique({
+  }
+  async createStudentsInTurma({turmaId , alunosId}:CreateStudentsInTurmaDto){
+    
+   const turmaInputData:Prisma.TurmaFindUniqueArgs = {
       where:{
-         id:createTurmaDto.idCoordenador
+         id:turmaId
+      }
+   }
+   const findTurmaByAlunoData = await this.prisma.turma.findUnique(turmaInputData);
+   const createdTurmaAlunos = await Promise.all(alunosId.map(async (alunoId)=>{
+     const alunoCurrentInputData:Prisma.AlunoFindUniqueArgs = {
+       where:{
+         id:alunoId.alunoId
+       }
+     }
+
+     const findCurrentAlunoData = await this.prisma.aluno.findUnique(alunoCurrentInputData);
+     const inputDataTurmaAluno:Prisma.Turma_AlunosCreateInput = {
+      turma:{
+         connect:findTurmaByAlunoData
+      },
+      aluno:{
+         connect:findCurrentAlunoData
+      }
+     }
+    return await this.prisma.turma_Alunos.create({data:inputDataTurmaAluno})
+
+   }))
+
+   const findTurmaAlunosInputData:Prisma.Turma_AlunosFindManyArgs = {
+      where:{
+         idTurma:createdTurmaAlunos[0].idTurma
       },
       select:{
-         turmas:true
+         aluno:true
       }
-     })
-     return {
-      Turma:createdTurmaByCoordenador,
-      ...TurmasByCoordenador
+   }
+    const findAlunosByTurma = await this.prisma.turma_Alunos.findMany(findTurmaAlunosInputData);
+
+
+    return {
+      AllAlunos:findAlunosByTurma,
+      TurmaAlunosCriadas:createdTurmaAlunos
+    }
+
+  }
+  async createSala(createSalaDto:CreateSala):Promise<any>{
+   try {
+
+      const isExistTeacher = await this.verifyUsersService.verifyTeacherExistenceById(createSalaDto.professorId);
+      const isExistsAllStudents = await this.verifyUsersService.verifyAllStudentsExistence(createSalaDto.alunosId);
+
+
+      if(isExistTeacher.isExist && isExistsAllStudents.isValid){
+         
+               const turmaInputSearch:Prisma.TurmaFindUniqueArgs = {
+                  where:{
+                     id:createSalaDto.turmaId
+                  }
+                }
+                const teacherInputSearch:Prisma.ProfessorFindUniqueArgs = {
+                    where:{
+                     id:createSalaDto.professorId
+                    }
+                }
+                const coordenadorInputSearch:Prisma.CoordenadorFindUniqueArgs = {
+                   where:{
+                     id:createSalaDto.coordenadorId
+                   }
+                }
+                const coordenador = await this.prisma.coordenador.findUnique(coordenadorInputSearch);
+                const teacher = await this.prisma.professor.findUnique(teacherInputSearch);
+                const turma = await this.prisma.turma.findUnique(turmaInputSearch);
+                const SalaDataInput:Prisma.SalasCreateInput = {
+                   sala_name:createSalaDto.sala_name,
+                  turma:{
+                     connect:turma
+                  },
+                  professor:{
+                     connect:teacher
+                  },
+                  coordenador:{
+                     connect:coordenador
+                  }
+                  
+               }
+                const createdSala = await this.prisma.salas.create({data:SalaDataInput});  
+                const createdAlunosSalas = await this.createAlunoInSalas(
+               {
+                  salaId:createdSala.id,  
+                  alunosId:createSalaDto.alunosId
+               })
+         
+               return {
+                sala:createdSala,
+                createdAlunosInSalas:createdAlunosSalas,
+                status:201
+               }
+
+      }else{
+       return {
+          status:400
+         }
+      }
+
+   } catch (error) {
+    throw new Error(`${error}`)
+   }
+}
+  async createAlunoInSalas({salaId , alunosId}:SalasAlunosDto):Promise<any>{
+   
+    const salaInputData:Prisma.SalasFindUniqueArgs = {
+    where:{
+       id:salaId
+    }
+   };
+   const findSalaByAlunoData = await this.prisma.salas.findUnique(salaInputData);
+   const createdSalaAlunos = await Promise.all(alunosId.map(async (alunoId:AlunoId)=>{
+      
+      const alunoCurrentInputData:Prisma.AlunoFindUniqueArgs = {
+       where:{
+        id:alunoId.alunoId
+       },
      }
+    const findCurrentAlunoData = await this.prisma.aluno.findUnique(alunoCurrentInputData)
+    const inputDataSalasAlunos:Prisma.Salas_AlunosCreateInput = {
+      sala:{
+       connect:findSalaByAlunoData
+      },
+      aluno:{
+       connect:findCurrentAlunoData
+      }
+    }
+    
+   return await this.prisma.salas_Alunos.create({data:inputDataSalasAlunos});
+
+
+  })) 
+  //tanto faz a posição desde que esteja na mesma sala
+  const findSalasAlunos:Prisma.Salas_AlunosFindManyArgs = {
+     where:{
+       idSala:createdSalaAlunos[0].idSala
+     },
+     select:{
+       aluno:true
+     }
+ }
+   //agora fazer a mesma lógica pras questões
+   //encontrar todos os alunos relacionados aquela sala
+  const findAlunosBySala = await this.prisma.salas_Alunos.findMany(findSalasAlunos);
+
+
+  return {
+    AllAlunos:findAlunosBySala,
+    SalaCriada:createdSalaAlunos
+  }
+
+}
+ async findCoordenadorByEmail(email:string):Promise<Coordenador>{
+   
+   let  coordenadorByEmail =  await this.prisma.coordenador.findUnique({where:{email}});
+   return coordenadorByEmail;  
+  
+  }
+  async findCoordenadorById(id:string):Promise<Coordenador|null>{
+     const coordenador = await this.prisma.coordenador.findUnique({
+        where:{
+           id:id
+        },
+     });
+     return coordenador;
   }
   //encontrar todas as turmas pelo coordenador
   async findAllTurmas(idCoordenador:string):Promise<any>{
 
-   const findAllByIdCoordenador = await this.prisma.coordenador.findMany({where:{
+   const findAllTurmasByIdCoordenador = await this.prisma.coordenador.findMany({where:{
       id:idCoordenador
    },
    select:{
       turmas:true
    }
 })
-    
-return findAllByIdCoordenador
+    const turmasByIdCoordenador = Object.values(findAllTurmasByIdCoordenador[0].turmas || []).map((turma)=>{
+        return{
+         name_turma:turma.turma_name,
+         id:turma.id  
+      }})
+    return turmasByIdCoordenador
 
 
   }
-  //criar uma sala pelo coordenador
-  //professor e alunos
-  //id da turma em que a sala tá
-  //id do coordenador- responsável por criar as turmas
-  //array de ids - alunos
-  //array de ids - pode ser 1 ou mais professores da mesma matéria
-  //na hora de criar a sala , relacionar a mesma com o(s) professores
-  //inicialmente , registringir ao coordenador cadastrar apenas 1 professor
-  //para criar uma sala , preciso criar uma turma
-  //adicionar restrições
-  
-  async createSala(createSalaDto:CreateSala):Promise<any>{
-     try {
-
-        const isExistTeacher = await this.verifyUsersService.verifyTeacherExistenceById(createSalaDto.professorId);
-        const isExistsAllStudents = await this.verifyUsersService.verifyAllStudentsExistence(createSalaDto.alunosId);
-
-
-        if(isExistTeacher.isExist && isExistsAllStudents.isValid){
-           
-                 const turmaInputSearch:Prisma.TurmaFindUniqueArgs = {
-                    where:{
-                       id:createSalaDto.turmaId
-                    }
+  async getAllSalasByCoordenadorId(coordenadorId:string):Promise<{
+   status:number;
+   message:string;
+   salas?:any[]
+  }>{
+      try {
+         
+      const coordenadorTurmas = await this.prisma.coordenador.findMany({
+            where:{
+               id:coordenadorId
+            },
+            select:{
+               turmas:true
+            }
+         });
+          //
+         const salasInsideTurmas =  await Promise.all(
+            Object.values(coordenadorTurmas[0].turmas || []).map(async (turma)=>{
+               return await this.prisma.turma.findMany({
+                  where:{
+                     id:turma.id
+                  },
+                  select:{
+                     salas:true,
+                     turma_name:true
                   }
-                  const teacherInputSearch:Prisma.ProfessorFindUniqueArgs = {
-                      where:{
-                       id:createSalaDto.professorId
-                      }
-                  }
-                  const coordenadorInputSearch:Prisma.CoordenadorFindUniqueArgs = {
-                     where:{
-                       id:createSalaDto.coordenadorId
-                     }
-                  }
-                  const coordenador = await this.prisma.coordenador.findUnique(coordenadorInputSearch);
-                  const teacher = await this.prisma.professor.findUnique(teacherInputSearch);
-                  const turma = await this.prisma.turma.findUnique(turmaInputSearch);
-                  const SalaDataInput:Prisma.SalasCreateInput = {
-                     sala_name:createSalaDto.sala_name,
-                    turma:{
-                       connect:turma
-                    },
-                    professor:{
-                       connect:teacher
-                    },
-                    coordenador:{
-                       connect:coordenador
-                    }
-                    
+               })
+            })
+         )
+         //just a single array with salas and details
+         const salas = salasInsideTurmas.map((turmas)=>{
+            return turmas.flatMap((turma)=>{
+               return turma.salas.map((sala)=>{
+                 return{
+                  sala_name:sala.sala_name,
+                  salaId:sala.id,
+                  turmaName:turma.turma_name,
+                  turmaId:sala.turmaId,
+                  professorId:sala.professorId
                  }
-                 const createdSala = await this.prisma.salas.create({data:SalaDataInput});
-           
-                 const getClassProfessorResult = await this.prisma.salas.findUnique({
-                    where:{
-                       id:createdSala.id
-                    },
-                    select:{
-                       professor:true
-                    }
-                 })
-           
-                const createdAlunosSalas = await this.createAlunoInSalas(
-                 {
-                    salaId:SalaDataInput.id , 
-                    alunosId:createSalaDto.alunosId
-                 })
-           
-                 return {
-                  sala:createdSala,
-                  createdAlunosInSalas:createdAlunosSalas,
-                  status:201
-                 }
+               })
+            })
+         })
 
-        }else{
-         return {
-            status:400
+         const flattenedSalas = salas.flat();
+       //devolve um array de objetos sendo cada professor relacionado a uma sala
+       const professorDetailsInSalas = await Promise.all(
+         flattenedSalas.map(async (sala)=>{
+           const professor = await this.prisma.professor.findUnique({
+            where:{
+               id:sala.salaId
+            },
+            select:{
+               username:true,
+            }
+           })
+
+           return professor
+         })
+       )
+
+        //aqui se torna um array com as salas , sendo cada uma possuindo
+        //sala_name , salaId , turmaId , turmaName , professorId , professorName
+         const arraySalas  = flattenedSalas.map((sala , index)=>{
+            const professor = professorDetailsInSalas[index];
+            return{
+               sala_name:sala.sala_name,
+               salaId:sala.salaId,
+               turmaId:sala.turmaId,
+               turmaName:sala.turmaName,
+               professorName:professor.username,
+               professorId:sala.professorId
+            }
+         })
+
+         if(!arraySalas){
+           return{
+            status:400,
+            message:'Não foi possível achar as salas relacionadas a essa turma!'
            }
-        }
+         }
+       
+         return{
+            status:200,
+            message:'Requisição realizada com sucesso!',
+            salas:arraySalas
+         }
 
-     } catch (error) {
-      throw new Error(`${error}`)
-     }
-  }
-  //função para criar um aluno na sala
-  //fazer função para criar vários alunos na sala
-  //passar o id da sala criada na função create sala logo após criá-la
-  //tudo isso pra n ficar dando npx prisma migrate dev --name init
-  async createAlunoInSalas({salaId , alunosId}:SalasAlunosDto):Promise<any>{
-     
-     //this.prisma.salas_Alunos.create({data:inputDataSalasAlunos});
-     const salaInputData: Prisma.SalasFindUniqueArgs = {
-      where: {
-         id: salaId,
-      },
-   };
-     const createdSalaAlunos = await Promise.all(alunosId.map(async (alunoId:AlunoId)=>{
-        
-        const alunoCurrentInputData:Prisma.AlunoFindUniqueArgs = {
-         where:{
-          id:alunoId.alunoId
-         },
-       }
-      const findCurrentAlunoData = await this.prisma.aluno.findUnique(alunoCurrentInputData)
-      const findCurrentSalaByAlunoData = await this.prisma.salas.findUnique(salaInputData);
-      
-   
-      const inputDataSalasAlunos:Prisma.Salas_AlunosCreateInput = {
-        sala:{
-         connect:findCurrentSalaByAlunoData
-        },
-        aluno:{
-         connect:findCurrentAlunoData
-        }
+      } catch (error) {
+         throw new Error(`${error}`);
       }
+  }
+  async getAllStudentsInTurmaByCoordenadorId(coordenadorId:string):Promise<{
+   status:number;
+   message:string;
+   students?:any[]
+  }>{
+
+   try {
       
-     return await this.prisma.salas_Alunos.create({data:inputDataSalasAlunos});
+     const turmasCoordenador = await this.prisma.coordenador.findMany({
+      where:{
+         id:coordenadorId
+      },
+      select:{
+         turmas:true
+      }
+     })
 
+    const turmasAlunos = await Promise.all(
+       Object.values(turmasCoordenador[0].turmas || []).map( async (turma)=>{
+         const alunosInTurma = await this.prisma.turma_Alunos.findMany({
+            where:{
+               idTurma:turma.id
+            },
+            select:{
+               aluno:{
+               select:{
+                  id:true,
+                  username:true,
+                  matricula:true,
+                  email:true,
+                  telefone:true,
+                  turma:true,
+                  parent_name:true,
+                  parent2_name:true,
+                  telefone_parent_1:true,
+                  telefone_parent2_1:true
+               }
+               },
+               turma:{
+                  select:{
+                     id:true,
+                     turma_name:true
+                  }
+               }
+            }
+         })
+         return alunosInTurma
+       })
+    )
+     const arrayStudents = turmasAlunos.flat().map((aluno)=>{
+        return{
+         alunoId:aluno.aluno.id,
+         alunoName:aluno.aluno.username,
+         matricula:aluno.aluno.matricula,
+         alunoEmail:aluno.aluno.email,
+         alunoTelefone:aluno.aluno.telefone,
+         turma:aluno.aluno.turma,
+         turmaId:aluno.turma.id,
+         turmaName:aluno.turma.turma_name,
+         telefone_parent_1:aluno.aluno.telefone_parent_1,
+         telefone_parent2_1:aluno.aluno.telefone_parent2_1,
+         parent_name:aluno.aluno.parent_name,
+         parent2_name:aluno.aluno.parent2_name
+        }
+     })
 
-    }))
- 
- 
-    //tanto faz a posição desde que esteja na mesma sala
-    const findSalasAlunos:Prisma.Salas_AlunosFindManyArgs = {
-       where:{
-         idSala:createdSalaAlunos[0].idSala
-       },
-       select:{
-         aluno:true
+    
+     if(!arrayStudents){
+       return{
+         status:400,
+         message:'Requisição não realizada com sucesso!'
        }
-   }
-     //agora fazer a mesma lógica pras questões
-     //encontrar todos os alunos relacionados aquela sala
-    const findAlunosBySala = await this.prisma.salas_Alunos.findMany(findSalasAlunos);
+     }
 
-
-    return {
-      AllAlunos:findAlunosBySala,
-      SalaCriada:createdSalaAlunos
+    return{
+      status:200,
+      message:'Requisição realizada com sucesso!',
+      students:arrayStudents
     }
 
 
-  }
+   } catch (error) {
+      throw new Error(`${error}`);
+   }
 
-  async deleteStudentInSala(){
+
+
 
   }
-  async deleteTeacherInSala(){
+  async getAllTeachers():Promise<{
+   status:number;
+   message:string;
+   teachers?:any[];
+  }>{
+      try {
+         
+       const getAllTeachers = await this.prisma.professor.findMany({
+         select:{
+            id:true,
+            username:true,
+            endereco:true,
+            email:true,
+            email_profissional:true,
+            telefone1:true,
+            telefone2:true,
+
+         }
+       })
+
+        if(!getAllTeachers){
+          return {
+            status:400,
+            message:'Não foi possível realizar a busca de professores!'
+          }
+        }
+
+        return{
+         status:200,
+         message:'Requisição realizada com sucesso!',
+         teachers:getAllTeachers
+        }
+
+
+      } catch (error) {
+         throw new Error(`${error}`);
+      }
+  }
+  async getAllSalasByAlunoId(getAllSalasByAlunoId:GetAllSalasDto){
+   const {alunoId} = getAllSalasByAlunoId;
+
+  const getAllSalas = await this.prisma.salas_Alunos.findMany({
+     where:{
+        idAluno:alunoId
+     },
+     include:{
+        sala:true
+     }
+  })
+
+
+
+  const getClassOneforOne =  getAllSalas.map((salas_alunos)=>{ 
+     return {
+        salaId:salas_alunos.sala.id,
+        salaName:salas_alunos.sala.sala_name,
+        salaAvatar:salas_alunos.sala.avatar,
+        idProfessor:salas_alunos.sala.professorId
+     }
+  })
+
+   console.log("É pra ter um array com todas as salas=>",getClassOneforOne);
+  
+
+   // era isso mesmo
+   //pelo fato de ter um comportamento assincrono
+   //não sabia como pegar cada professor pelo id dele que tava na sala
+   // não sei se isso é escalonável
+   // pega todos os professores relacionados a cada sala em que o alunoId está
+   const getProfessorOneByOne = await Promise.all(getClassOneforOne.map((sala)=>{
+     return this.prisma.professor.findMany({
+        where:{
+           id:sala.idProfessor
+        },
+        select:{
+         username:true,
+         avatar:true
+        }
+     })
+   }))
+
+   //agrupa as principais informações
+   // avatar e nome das entidade professor e sala
+   const result = getClassOneforOne.map((sala,index)=>{
+       let professor = getProfessorOneByOne[index][0];
+       return {
+        salaId:sala.salaId,  
+        salaName:sala.salaName,
+        professorName:professor.username,
+        salaAvatar:sala.salaAvatar,
+        professorAvatar:professor.avatar
+       }
+   })
+
+   console.log(result);
+
+
+   return {
+     ...result
+   }
+
+
+  }
+  //melhorar essa função
+  //adaptar ela pra como foi feito no front-end
+  async getDesempenhoByStudentId(studentId:string):Promise<{
+   status:number;
+   message:string;
+   desempenhoStudent?:any[]
+  }>{
+
+    try {
+      
+     const getDesempenhoByStudentId = await this.prisma.desempenho.findMany({
+      where:{
+         alunoId:studentId
+      },
+      select:{
+        simulado:{
+         select:{
+            qtdQuestao:true
+         }
+        },
+        portugues_correct_answers:true,
+        matematica_correct_answers:true,
+        fisica_correct_answers:true,
+        quimica_correct_answers:true,
+        biologia_correct_answers:true
+      }
+     })
+
+     if(!getDesempenhoByStudentId){
+       return{
+         status:400,
+         message:'Requisição mal sucedida , tente novamente!'
+       }
+     }
+
+     return{
+      status:200,
+      message:'Requisição bem sucedida!',
+      desempenhoStudent:getDesempenhoByStudentId
+     }
+
+
+    } catch (error) {
+      throw new Error(`${error}`)
+    }
+
 
   }
   async deleteTurmaById(deleteTurmaDto:DeleteTurmaDto):Promise<{
@@ -317,34 +666,36 @@ return findAllByIdCoordenador
   }>{
  
    try {
- 
-      const deleteTurmaInput:Prisma.TurmaDeleteArgs = {
-           where:{
-            id:deleteTurmaDto.turmaId
-           },
 
-           
-      }    
-      const deleteSalasInput:Prisma.SalasDeleteManyArgs = {
-         where:{
-            turmaId:deleteTurmaDto.turmaId
-         }
+     const isAuthorizedToDelete = await this.verifyUsersService.verifyCoordenadorPassword({
+      coordenadorId:deleteTurmaDto.coordenadorId,
+      coordenadorPassword:deleteTurmaDto.coordenadorPassword
+     })
+
+     if(isAuthorizedToDelete.isAuthorized){
+        const deleteTurmaInput:Prisma.TurmaDeleteArgs = {
+             where:{
+              id:deleteTurmaDto.turmaId,
+              idCoordenador:deleteTurmaDto.coordenadorId
+             },
+        }    
+        const deletedTurmaById = await this.prisma.turma.delete(deleteTurmaInput);
+          if(!deletedTurmaById){
+            return{
+              status:400,
+              message:'Turma não deletada com sucesso , tente denovo!'
+            }
+          }
+            return{
+              status:200,
+              message:"Turma excluída com sucesso!"
+            }
+     }else{
+      return{
+         status:400,
+         message:"Senha Inválida , tente outra!"
       }
-    console.log("id turma=>" , deleteTurmaDto.turmaId);
-      const deletedTurmaById = await this.prisma.turma.delete(deleteTurmaInput);
-     // const deletedSalasByTurmaId = await this.prisma.salas.deleteMany(deleteSalasInput);
-        if(!deletedTurmaById){
-          return{
-            status:400,
-            message:'Turma não deletada com sucesso , tente denovo!'
-          }
-        }
-
-          return{
-            status:200,
-            message:"Turma excluída com sucesso!"
-          }
-
+     }
 
    } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -358,57 +709,142 @@ return findAllByIdCoordenador
          throw new Error(`Erro inesperado: ${error}`);
       }
    }
+  }
+  async deleteSalaById(salaId:string):Promise<{
+   status:number;
+   message:string;
+  }>{
+
+    try {
+      //fazer a verificação da senha depois. talvez eu faça no frontend
+      const deletedSalaById = await this.prisma.salas.delete({
+         where:{
+            id:salaId,
+         }
+      })
+
+      if(!deletedSalaById){
+        return{
+         status:400,
+         message:'Sala não foi excluída, tente novamente!'
+        }
+      }
+
+      return{
+         status:200,
+         message:'Sala excluída com sucesso!'
+      }
+
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+
+  }
+  async deleteStudentById(alunoId:string):Promise<
+  {
+   status:number;
+   message:string;
+  }
+  >{
+
+    try {
+      
+     const deleteInputStudent:Prisma.AlunoDeleteArgs = {
+          where:{
+            id:alunoId
+          }
+     }
+     const deletedStudentById = await this.prisma.aluno.delete(deleteInputStudent);
+     if(!deletedStudentById){
+      return {
+         status:400,
+         message:'Não foi possível excluir o aluno , tente novamente'
+      }
+     }
+
+     return{
+      status:200,
+      message:'Aluno excluído com sucesso!'
+     }
+
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
+
 
 
   }
-  async deleteSalaById(){
+  async deleteTeacherById(professorId:string):Promise<
+  {
+   status:number;
+   message:string;
+  }
+  >{
+
+    try {
+      
+     const deleteInputTeacher:Prisma.ProfessorDeleteArgs = {
+        where:{
+         id:professorId
+        }
+     }
+   
+
+     const deletedTeacherById = await this.prisma.professor.delete(deleteInputTeacher);
+
+     if(!deletedTeacherById){
+       return{
+        status:400,
+        message:'Não foi possível excluir o professor!'
+       }
+     }
+ 
+     return{
+      status:200,
+      message:'Professor excluído com sucesso!'
+     }
+
+    } catch (error) {
+      throw new Error(`${error}`);
+    }
 
   }
-  async deleteStudent(){
+  async updateTeacherInSala(){}
+  async updateStudentInSala(){}
 
-  }
-  async deleteTeacher(){
-
-  }
-
- async updateProfessorInSala(){
-
- }
-
-  // essa função não vai mudar 
-  //alterar essa função para funcionar corretamente
+  //fineshed
   async updateCoordenadorByParcialField({fieldUpdate , fieldName , idCoordenador}:UpdateCoordenadorDto):Promise<any>{
 
    let updatedCoordenador;
 
     switch(fieldName){
-      case 'email':
+      case 'username':
        updatedCoordenador = await  this.prisma.coordenador.update({
+         where:{
+            id:idCoordenador
+         },
+         data:{
+            username:fieldUpdate
+         }
+       })
+       break;
+      case 'email':
+      updatedCoordenador = await this.prisma.coordenador.update({
          where:{
             id:idCoordenador
          },
          data:{
             email:fieldUpdate
          }
-       })
-       break;
-      case 'telefone':
-      updatedCoordenador = await this.prisma.coordenador.update({
-         where:{
-            id:idCoordenador
-         },
-         data:{
-            telefone1:fieldUpdate,
-         }
       })
       break;
-      case  'password':
+      case  'name_instituicao':
          updatedCoordenador = await  this.prisma.coordenador.update({
             where:{
                id:idCoordenador
             },
             data:{
-               password:fieldUpdate
+               name_instituicao:fieldUpdate
             }
          })
          break;
@@ -416,108 +852,6 @@ return findAllByIdCoordenador
       }
       return updatedCoordenador;
 }
-  //deletar próprio perfil
-async deleteCoordenadorById(id:string):Promise<any>{
-  try {
-     
-   // id = id.startsWith(':') ? id.slice(1) : id;
-
-     const excludedCoordenador = this.prisma.coordenador.delete({
-         where:{
-            id:id
-         },
-         
-      })
-    const excludeOtpUser = this.prisma.otpUser.delete({
-      where:{
-         id:id
-      }
-    });
-    const excludeUser = this.prisma.user.delete({
-      where:{
-         id:id
-      }
-    })
-    console.log("id Válido?=>",id);
-      return {
-         excludeOtpUser,
-         excludeUser,
-         excludedCoordenador
-      }   
-  } catch (error) {
-   throw new Error(`${error}`)
-  }
-
-}
- // colocar no service de aluno e puxar no controller de aluno
- // aqui está errado
- //função que deve estar no aluno
- async getAllSalasByAlunoId(getAllSalasByAlunoId:GetAllSalasDto){
-    const {alunoId} = getAllSalasByAlunoId;
- 
-   const getAllSalas = await this.prisma.salas_Alunos.findMany({
-      where:{
-         idAluno:alunoId
-      },
-      include:{
-         sala:true
-      }
-   })
- 
-
-
-   const getClassOneforOne =  getAllSalas.map((salas_alunos)=>{ 
-      return {
-         salaId:salas_alunos.sala.id,
-         salaName:salas_alunos.sala.sala_name,
-         salaAvatar:salas_alunos.sala.avatar,
-         idProfessor:salas_alunos.sala.professorId
-      }
-   })
- 
-    console.log("É pra ter um array com todas as salas=>",getClassOneforOne);
-   
-
-    // era isso mesmo
-    //pelo fato de ter um comportamento assincrono
-    //não sabia como pegar cada professor pelo id dele que tava na sala
-    // não sei se isso é escalonável
-    // pega todos os professores relacionados a cada sala em que o alunoId está
-    const getProfessorOneByOne = await Promise.all(getClassOneforOne.map((sala)=>{
-      return this.prisma.professor.findMany({
-         where:{
-            id:sala.idProfessor
-         },
-         select:{
-          username:true,
-          avatar:true
-         }
-      })
-    }))
-
-    //agrupa as principais informações
-    // avatar e nome das entidade professor e sala
-    const result = getClassOneforOne.map((sala,index)=>{
-        let professor = getProfessorOneByOne[index][0];
-        return {
-         salaId:sala.salaId,  
-         salaName:sala.salaName,
-         professorName:professor.username,
-         salaAvatar:sala.salaAvatar,
-         professorAvatar:professor.avatar
-        }
-    })
- 
-    console.log(result);
-
-
-    return {
-      ...result
-    }
-
-
-   }
-   //fazer upload de avatar
  async updateCoordenadorAvatar(updateCoordenadorAvatar:UpdateCoordenadorAvatar):Promise<
  {
    message:string,
@@ -527,7 +861,6 @@ async deleteCoordenadorById(id:string):Promise<any>{
 
    
  try {
-   
    const updatedCoordenadorAvatar = await this.prisma.coordenador.update({
       where:{
          id:updateCoordenadorAvatar.coordenadorId
@@ -546,21 +879,205 @@ async deleteCoordenadorById(id:string):Promise<any>{
  }
 
 }
+ async updateStudentByPartialField({fieldUpdate , fieldName , idAluno}:UpdateDtoAluno):Promise<
+ {
+   status:number;
+   message:string;
+   updatedStudent?:any
+ }>{
+   try {
+   
+       let updatedStudent;
+       switch(fieldName){
+         case 'username':
+         updatedStudent = await this.prisma.aluno.update({
+            where:{
+               id:idAluno
+            },
+            data:{
+               username:fieldUpdate
+            }
+         })
+         break;
+         case 'email':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  email:fieldUpdate
+               }
+            })
+         break;
+         case 'telefone':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  telefone:fieldUpdate
+               }
+            })
+         break;
+         case 'turma':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  turma:fieldUpdate
+               }
+            })
+         break;
+         case 'nome_responsavel_1':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  parent_name:fieldUpdate
+               }
+            })
+         break;
+         case 'telefone_responsavel_1':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  telefone_parent_1:fieldUpdate
+               }
+            })
+         break;
+         case 'nome_responsavel_2':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  parent2_name:fieldUpdate
+               }
+            })
+         break;
+         case 'telefone_responsavel_2':
+            updatedStudent = await this.prisma.aluno.update({
+               where:{
+                  id:idAluno
+               },
+               data:{
+                  telefone_parent2_1:fieldUpdate
+               }
+            })
+         break;
+       }
 
- //passar o id do aluno
- async updateStudentByPartialField(){
+       if(!updatedStudent){
+         return{
+            status:400,
+            message:`Não foi possível atualizar o ${fieldName} do Aluno`
+         }
+       }
 
+       return{
+         status:200,
+         message:`Alteração do ${fieldName} do Aluno realizada com sucesso`,
+         updatedStudent:updatedStudent
+       }
+
+   } catch (error) {
+      throw new Error(`${error}`)
+   }
  }
- async updateTeacherByPartialField(){
-
+ async updateTeacherByPartialField({fieldName , fieldUpdate , idProfessor}:UpdateProfessorDto):Promise<
+ {
+   status:number;
+   message:string;
+   updatedTeacher?:any
  }
+ >{
+     try {
+      
+      let updatedProfessor;
+      switch(fieldName){
+        case 'username':
+        updatedProfessor = await this.prisma.professor.update({
+         where:{
+            id:idProfessor
+         },
+         data:{
+            username:fieldUpdate
+         }
+        })
+        break;
+        case 'endereco':
+         updatedProfessor = await this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               endereco:fieldUpdate
+            }
+           })
+        break;
+        case 'email':
+         updatedProfessor = await this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               email:fieldUpdate
+            }
+           })
+        break;
+        case 'email_profissional':
+         updatedProfessor = await this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               email_profissional:fieldUpdate
+            }
+           })
+        break;
+        case 'telefone1':
+         updatedProfessor = await this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               telefone1:fieldUpdate
+            }
+           })
+        break;
+        case 'telefone2':
+         updatedProfessor = await this.prisma.professor.update({
+            where:{
+               id:idProfessor
+            },
+            data:{
+               telefone2:fieldUpdate
+            }
+           })
+        break;
+      }
 
+     if(!updatedProfessor){
+       return{
+         status:400,
+         message:`Não foi possível atualizar o ${fieldName} do professor`,
+       }
+     }
 
+     return{
+      status:200,
+      message:`Atualização do ${fieldName} do professor realizada com sucesso!`,
+      updatedTeacher:updatedProfessor  
+   }
 
-//criar vários alunos com um arquivo excel
-//para fazer testes  de função vou retirar a filtragem de erros
-//cadastrar apenas os que estão com dados corretos na planilha
-//depois colocar novamente a filtragem de erros
+     } catch (error) {
+      throw new Error(`${error}`)
+     }
+ }
   async createStudentsAccounts(studentsAccounts:AlunoCreateDto[]):Promise<
   {
    status?:number;
@@ -692,7 +1209,6 @@ async deleteCoordenadorById(id:string):Promise<any>{
  }
 
 }
-//criar vários professores com um arquivo excel
 async createTeachersAccounts(teachersAccounts:ProfessorCreateDto[]):Promise<{
    status?:number;
    teachers?:ProfessorCreateDto[],

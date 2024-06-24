@@ -2,7 +2,9 @@ import { Injectable } from "@nestjs/common"
 import { AlunoId } from "../dto/create-alunoSalas.dto"
 import { AlunoService } from "src/aluno/aluno.service"
 import { PrismaService } from "src/prisma.service"
-
+import { CoordenadorService } from "../coordenador.service"
+import { CreateTurmaDto, DeleteTurmaDto } from "../dto/CRUD-turma.dto"
+import * as bcrypt from 'bcrypt'
 
 
 @Injectable()
@@ -81,5 +83,71 @@ export class VerifyUsersExistenceService{
 
 
   }
+
+
+ async verifyCoordenadorPassword({coordenadorPassword , coordenadorId}:DeleteTurmaDto):Promise<{
+    isAuthorized:boolean
+ }>{
+
+    try {
+        const coordenadorToVerifyPassword = await this.prisma.coordenador.findUnique({
+          where:{
+            id:coordenadorId
+          }
+        })
+        const isCorrectCoordenadorPassword = await bcrypt.compare(coordenadorPassword , coordenadorToVerifyPassword.password);
+        if(!coordenadorToVerifyPassword){
+            return {
+             isAuthorized:false
+            }        
+        }
+
+      if(!isCorrectCoordenadorPassword){
+        return {
+            isAuthorized:false
+           }        
+      }
+
+      return{
+        isAuthorized:true
+      }
+
+    
+    } catch (error) {
+        throw new Error(`${error}`)
+    }
+
+ }
+
+
+ async verifyCoordenadorExistence({idCoordenador}:CreateTurmaDto):Promise<
+  {
+    isExistCoordenador:boolean
+  }
+ >{
+     try {
+       
+      const isExistCoordenador = await this.prisma.coordenador.findUnique({
+        where:{
+          id:idCoordenador
+        }
+      })
+
+      if(!isExistCoordenador){
+        return{
+          isExistCoordenador:false
+        }
+      }
+
+      
+      return{
+        isExistCoordenador:true
+      }
+
+     } catch (error) {
+       throw new Error(`${error}`);
+     }
+ }
+
 
 }

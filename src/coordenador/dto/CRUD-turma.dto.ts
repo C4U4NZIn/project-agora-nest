@@ -11,18 +11,42 @@ import {
     IsPhoneNumber
   
   }  from 'class-validator'
-
+  import {
+    Type
+  } from 'class-transformer'
+import { AlunoId } from './create-alunoSalas.dto';
 
 export class CreateTurmaDto{
 
     @IsString()
     @IsUUID()
-   idCoordenador:string;
+    idCoordenador:string;
 
-   @IsString()
-   turma_name:string;
+    @IsString()
+    turma_name:string;
+
+
+    @ValidateNested({each:true})
+    @Type(()=> AlunoId)
+    alunosId:AlunoId[]
+
 
 }
+
+export class CreateStudentsInTurmaDto{
+
+
+    @IsUUID()
+    @IsString()
+    turmaId:string;
+
+    @ValidateNested({each:true})
+    @Type(()=> AlunoId)
+    alunosId:AlunoId[]
+}
+
+
+
 
 export class DeleteTurmaDto{
     @IsUUID()
@@ -32,5 +56,10 @@ export class DeleteTurmaDto{
     @IsUUID()
     @IsString()
     turmaId?:string;
+
+    @IsString()
+    @MinLength(8)
+    @MaxLength(18)
+    coordenadorPassword?:string;
 
 }
