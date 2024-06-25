@@ -11,6 +11,7 @@ import { User } from "src/entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { UpdateDtoAluno } from "./dto/CRUD-aluno.dto";
 import { UpdateAvatarDto } from "./dto/CRUD-aluno.dto";
+import { GetAllSalasDto } from "src/coordenador/dto/getAllSalas.dto";
 //import { AuthService } from '../../src/Auth/auth.service';
 
 //import { loggerValidationMiddleware } from "src/Auth/middlewares/login-validation.middleware";
@@ -136,6 +137,65 @@ export class AlunoService{
   async findAllAlunos(){
     return this.prisma.aluno.findMany();
   }
+  async getAllSalasByAlunoId(getAllSalasByAlunoId:GetAllSalasDto){
+   const {alunoId} = getAllSalasByAlunoId;
+
+  const getAllSalas = await this.prisma.salas_Alunos.findMany({
+     where:{
+        idAluno:alunoId
+     },
+     include:{
+        sala:true
+     }
+  })
+
+
+
+  const getClassOneforOne =  getAllSalas.map((salas_alunos)=>{ 
+     return {
+        salaId:salas_alunos.sala.id,
+        salaName:salas_alunos.sala.sala_name,
+        salaAvatar:salas_alunos.sala.avatar,
+        idProfessor:salas_alunos.sala.professorId
+     }
+  })
+
+   // era isso mesmo
+   //pelo fato de ter um comportamento assincrono
+   //não sabia como pegar cada professor pelo id dele que tava na sala
+   // não sei se isso é escalonável
+   // pega todos os professores relacionados a cada sala em que o alunoId está
+   const getProfessorOneByOne = await Promise.all(getClassOneforOne.map((sala)=>{
+     return this.prisma.professor.findMany({
+        where:{
+           id:sala.idProfessor
+        },
+        select:{
+         username:true,
+         avatar:true
+        }
+     })
+   }))
+
+   //agrupa as principais informações
+   // avatar e nome das entidade professor e sala
+   const result = getClassOneforOne.map((sala,index)=>{
+       let professor = getProfessorOneByOne[index][0];
+       return {
+        salaId:sala.salaId,  
+        salaName:sala.salaName,
+        professorName:professor.username,
+        salaAvatar:sala.salaAvatar,
+        professorAvatar:professor.avatar
+       }
+   })
+
+   return {
+     ...result
+   }
+
+
+  }
 
   async updateAlunoByParcialField({fieldUpdate , fieldName , idAluno}:UpdateDtoAluno):Promise<any>{
 
@@ -178,78 +238,76 @@ export class AlunoService{
          }
          return updatedAluno;
   }
-
+  async updateAlunoAvatar(updateAvatar:UpdateAvatarDto):Promise<{
+     message:string , avatar:any
+   }>{
+      
+      //const bufferAluno = Buffer.from(updateAvatar.avatar);
+      
+      const updatedAluno = await this.prisma.aluno.update({
+         where:{
+            id:updateAvatar.alunoId
+         },
+         data:{
+            avatar:updateAvatar.avatar
+         }
+      })
+      
+      
+      if(updatedAluno){
+         return{
+            message:'Requisição realizado com Sucesso!',
+            avatar:updatedAluno.avatar
+         }
+      }else{
+         return{
+            message:'Requisição não realizada com sucesso',
+            avatar:null
+         }
+      }
+      
+      
+   }
   async deleteAlunoById(id:string):Promise<any>{
-     try {
-        
-       id = id.startsWith(':') ? id.slice(1) : id;
-
-        const excludedAluno = this.prisma.aluno.delete({
+        try {
+           
+          id = id.startsWith(':') ? id.slice(1) : id;
+   
+           const excludedAluno = this.prisma.aluno.delete({
+               where:{
+                  id:id
+               },
+               
+            })
+          const excludeOtpUser = this.prisma.otpUser.delete({
             where:{
                id:id
-            },
+            }
+          });
+          const excludeUser = this.prisma.user.delete({
+            where:{
+               id:id
+            }
+          })
+   
+          
+   
+          console.log("id Válido?=>",id);
+   
+            return {
+               excludeOtpUser,
+               excludeUser,
+               excludedAluno
+            }
+   
             
-         })
-       const excludeOtpUser = this.prisma.otpUser.delete({
-         where:{
-            id:id
-         }
-       });
-       const excludeUser = this.prisma.user.delete({
-         where:{
-            id:id
-         }
-       })
-
-       
-
-       console.log("id Válido?=>",id);
-
-         return {
-            excludeOtpUser,
-            excludeUser,
-            excludedAluno
-         }
-
-         
-         
             
-     } catch (error) {
-      throw new Error(`${error}`)
-     }
-
-  }
-
-  async updateAlunoAvatar(updateAvatar:UpdateAvatarDto):Promise<{
-   message:string , avatar:any
-  }>{
-    
-   //const bufferAluno = Buffer.from(updateAvatar.avatar);
-
-   const updatedAluno = await this.prisma.aluno.update({
-      where:{
-       id:updateAvatar.alunoId
-      },
-      data:{
-       avatar:updateAvatar.avatar
+               
+        } catch (error) {
+         throw new Error(`${error}`)
       }
-    })
+   }
 
-
-    if(updatedAluno){
-      return{
-         message:'Requisição realizado com Sucesso!',
-         avatar:updatedAluno.avatar
-      }
-    }else{
-      return{
-         message:'Requisição não realizada com sucesso',
-         avatar:null
-      }
-    }
-
-
-  }
-
-
+   
+   
 }

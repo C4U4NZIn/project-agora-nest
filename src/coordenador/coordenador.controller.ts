@@ -237,26 +237,6 @@ export class CoordenadorController{
            throw new Error(`${error}`)
         }
     }
-    //tirar daqui esse end point e colocar no controller de aluno
-    //assim como o service 
-    @Post('getAllSalas')
-    async getAllSalasByAlunoId(@Body() getAllSalasByAlunoIdDto:GetAllSalasDto , @Res() res:Response){
-
-        const returnedFromResponseAllInfoSalas = await this.coordenadorService.getAllSalasByAlunoId(getAllSalasByAlunoIdDto);
-       
-        if(returnedFromResponseAllInfoSalas){
-          return  res.json({
-             status:202,
-            data:returnedFromResponseAllInfoSalas
-            })
-        }else{
-           return res.json({
-                status:409,
-                data:returnedFromResponseAllInfoSalas
-               })
-        }
-
-    }
     //
     @Post('update-avatar')
     async updateCoordenadorAvatar(@Body() updateCoordenadorAvatar:UpdateCoordenadorAvatar , @Res() res:Response){

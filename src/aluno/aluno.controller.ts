@@ -5,7 +5,7 @@ import { AlunoCreateDto } from "./dto/CRUD-aluno.dto";
 import { AlunoService } from "./aluno.service";
 import { UpdateDtoAluno } from "./dto/CRUD-aluno.dto";
 import { UpdateAvatarDto } from "./dto/CRUD-aluno.dto";
-
+import { GetAllSalasDto } from "src/coordenador/dto/getAllSalas.dto";
 
 
 @IsPublic()
@@ -13,21 +13,6 @@ import { UpdateAvatarDto } from "./dto/CRUD-aluno.dto";
 export class AlunoController{
     constructor(private readonly alunoService:AlunoService){}
     
-    /**
-     Foi colocado no controller do coordenador
-         @Post('post')
-         async create(@Body() alunoCreateDto:AlunoCreateDto , @Res() res:Response){
-     
-          const responseService = await this.alunoService.create(alunoCreateDto);
-         
-          return res.json({
-           message:'Requisition sucesfully',
-           ...responseService
-          })
-     
-         }
-     * 
-     */
       @Post('updatePartial')
     async updateData(@Body() alunoUpdateDto:UpdateDtoAluno , @Res() res:Response){
 
@@ -102,7 +87,25 @@ export class AlunoController{
         }
 
       }
-
+      @Post('getAllSalas')
+      async getAllSalasByAlunoId(@Body() getAllSalasByAlunoIdDto:GetAllSalasDto , @Res() res:Response){
+  
+          const returnedFromResponseAllInfoSalas = await this.alunoService.getAllSalasByAlunoId(getAllSalasByAlunoIdDto);
+         
+          if(returnedFromResponseAllInfoSalas){
+            return  res.json({
+               status:202,
+              data:returnedFromResponseAllInfoSalas
+              })
+          }else{
+             return res.json({
+                  status:409,
+                  data:returnedFromResponseAllInfoSalas
+                 })
+          }
+  
+      }
+      
  
   
 }
