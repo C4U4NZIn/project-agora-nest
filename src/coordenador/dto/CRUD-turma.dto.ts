@@ -57,11 +57,6 @@ export class DeleteTurmaDto{
     @IsString()
     turmaId?:string;
 
-    @IsString()
-    @MinLength(8)
-    @MaxLength(18)
-    coordenadorPassword?:string;
-
 }
 
 export class DeleteTurmaAlunoDto{

@@ -85,39 +85,7 @@ export class VerifyUsersExistenceService{
   }
 
 
- async verifyCoordenadorPassword({coordenadorPassword , coordenadorId}:DeleteTurmaDto):Promise<{
-    isAuthorized:boolean
- }>{
 
-    try {
-        const coordenadorToVerifyPassword = await this.prisma.coordenador.findUnique({
-          where:{
-            id:coordenadorId
-          }
-        })
-        const isCorrectCoordenadorPassword = await bcrypt.compare(coordenadorPassword , coordenadorToVerifyPassword.password);
-        if(!coordenadorToVerifyPassword){
-            return {
-             isAuthorized:false
-            }        
-        }
-
-      if(!isCorrectCoordenadorPassword){
-        return {
-            isAuthorized:false
-           }        
-      }
-
-      return{
-        isAuthorized:true
-      }
-
-    
-    } catch (error) {
-        throw new Error(`${error}`)
-    }
-
- }
 
 
  async verifyCoordenadorExistence({idCoordenador}:CreateTurmaDto):Promise<

@@ -451,7 +451,6 @@ export class CoordenadorService{
   }>{
 
    try {
-      
      const turmasCoordenador = await this.prisma.coordenador.findMany({
       where:{
          id:coordenadorId
@@ -618,23 +617,17 @@ export class CoordenadorService{
 
 
   }
-  async deleteTurmaById(deleteTurmaDto:DeleteTurmaDto):Promise<{
+  async deleteTurmaById(turmaId:string):Promise<{
    message:string,
    status:number;
   }>{
  
    try {
 
-     const isAuthorizedToDelete = await this.verifyUsersService.verifyCoordenadorPassword({
-      coordenadorId:deleteTurmaDto.coordenadorId,
-      coordenadorPassword:deleteTurmaDto.coordenadorPassword
-     })
-
-     if(isAuthorizedToDelete.isAuthorized){
+   
         const deleteTurmaInput:Prisma.TurmaDeleteArgs = {
              where:{
-              id:deleteTurmaDto.turmaId,
-              idCoordenador:deleteTurmaDto.coordenadorId
+              id:turmaId,
              },
         }    
         const deletedTurmaById = await this.prisma.turma.delete(deleteTurmaInput);
@@ -648,12 +641,7 @@ export class CoordenadorService{
               status:200,
               message:"Turma excluída com sucesso!"
             }
-     }else{
-      return{
-         status:400,
-         message:"Senha Inválida , tente outra!"
-      }
-     }
+     
 
    } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

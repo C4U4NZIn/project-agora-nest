@@ -363,7 +363,6 @@ export class CoordenadorController{
    @Delete('turma/:id')
    async deleteTurmaById(
     @Param('id') turmaId:string ,
-    @Body() {coordenadorId}:DeleteTurmaDto,
     @Res() res:Response
   
   ){
@@ -372,10 +371,7 @@ export class CoordenadorController{
        
       // turmaId = turmaId.startsWith(':') ? turmaId.slice(1) : turmaId;
 
-      const responseDeletedTurma = await this.coordenadorService.deleteTurmaById({
-        turmaId:turmaId,
-        coordenadorId:coordenadorId
-      })
+      const responseDeletedTurma = await this.coordenadorService.deleteTurmaById(turmaId);
 
       if(responseDeletedTurma.status !== 200){
         res.status(400).json({
